@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/sonner'
+import { Suspense } from 'react'
 import './globals.css'
 
-const inter = Inter({ 
+const geistSans = Geist({ 
   subsets: ["latin"],
-  variable: '--font-inter'
+  variable: '--font-geist-sans'
 });
 
 const geistMono = Geist_Mono({ 
@@ -15,37 +16,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'casaData - Convertí tus carteles en generadores de leads',
-  description: 'Plataforma PropTech que conecta cartelería inmobiliaria física con fichas digitales mediante códigos QR. Medí cuántas personas ven tus propiedades y generá más consultas.',
+  title: 'casaData - Tu hogar te esta esperando',
+  description: 'Encuentra tu hogar ideal. Explora casas, apartamentos, cocheras, negocios y espacios de almacenamiento escaneando codigos QR desde carteles inmobiliarios.',
   generator: 'v0.app',
-  keywords: ['inmobiliaria', 'real estate', 'leads', 'QR', 'proptech', 'marketing inmobiliario'],
+  keywords: ['inmobiliaria', 'real estate', 'leads', 'QR', 'proptech', 'marketing inmobiliario', 'Uruguay'],
   authors: [{ name: 'casaData' }],
   openGraph: {
-    title: 'casaData - Convertí tus carteles en generadores de leads',
-    description: 'Transformá carteles inmobiliarios en canales de generación de leads medibles.',
+    title: 'casaData - Tu hogar te esta esperando',
+    description: 'Transforma carteles inmobiliarios en canales de generacion de leads medibles.',
     type: 'website',
-  },
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
   },
 }
 
 export const viewport: Viewport = {
-  themeColor: '#4a3728',
+  themeColor: '#166534',
   width: 'device-width',
   initialScale: 1,
 }
@@ -57,8 +41,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}>
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+        <Suspense fallback={null}>
+          {children}
+        </Suspense>
         <Toaster />
         <Analytics />
       </body>

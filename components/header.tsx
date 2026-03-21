@@ -10,7 +10,7 @@ export function Header() {
   const [open, setOpen] = useState(false)
 
   const navLinks = [
-    { href: '/properties', label: 'Propiedades' },
+    { href: '/inmuebles', label: 'Propiedades' },
     { href: '/dashboard', label: 'Dashboard' },
   ]
 
@@ -39,10 +39,10 @@ export function Header() {
 
         <div className="hidden items-center gap-3 md:flex">
           <Button variant="ghost" asChild>
-            <Link href="/login">Iniciar sesión</Link>
+            <Link href="/auth/login">Iniciar sesion</Link>
           </Button>
           <Button asChild>
-            <Link href="/register">Registrarse</Link>
+            <Link href="/auth/register">Registrarse</Link>
           </Button>
         </div>
 
@@ -76,10 +76,10 @@ export function Header() {
               </nav>
               <div className="flex flex-col gap-3 pt-4">
                 <Button variant="outline" asChild>
-                  <Link href="/login" onClick={() => setOpen(false)}>Iniciar sesión</Link>
+                  <Link href="/auth/login" onClick={() => setOpen(false)}>Iniciar sesion</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/register" onClick={() => setOpen(false)}>Registrarse</Link>
+                  <Link href="/auth/register" onClick={() => setOpen(false)}>Registrarse</Link>
                 </Button>
               </div>
             </div>

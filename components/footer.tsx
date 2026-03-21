@@ -22,12 +22,12 @@ export function Footer() {
             <h3 className="mb-4 text-sm font-semibold">Producto</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
-                <Link href="/properties" className="transition-colors hover:text-foreground">
+                <Link href="/inmuebles" className="transition-colors hover:text-foreground">
                   Ver propiedades
                 </Link>
               </li>
               <li>
-                <Link href="/create-property" className="transition-colors hover:text-foreground">
+                <Link href="/dashboard/publish" className="transition-colors hover:text-foreground">
                   Publicar propiedad
                 </Link>
               </li>
