@@ -1,30 +1,95 @@
-export function getInsights(visits, leads) {
-  const totalVisits = visits.length;
+type PropertyStatus =
+| "alta_demanda"
+| "interes_activo"
+| "baja_demanda"
+| "nuevo";
 
-  const uniqueSessions = new Set(visits.map(v => v.sessionId));
-  const revisits = totalVisits - uniqueSessions.size;
+type Insights = {
+totalVisits: number;
+uniqueUsers: number;
+revisits: number;
+leadsCount: number;
 
-  const leadsCount = leads.length;
+formLeads: number;
+whatsappLeads: number;
 
-  const revisitRate = totalVisits ? revisits / totalVisits : 0;
-  const conversionRate = totalVisits ? leadsCount / totalVisits : 0;
+conversionRate: number;
+formConversion: number;
+whatsappConversion: number;
 
-  let status = "nuevo";
+qrVisits: number;
+webVisits: number;
 
-  if (totalVisits > 50 && revisitRate > 0.3) {
-    status = "alta_demanda";
-  } else if (totalVisits > 20) {
-    status = "interes_activo";
-  } else if (totalVisits < 10) {
-    status = "baja_demanda";
-  }
+status: PropertyStatus;
+score: number;
+};
 
-  return {
-    totalVisits,
-    revisits,
-    leadsCount,
-    status,
-    revisitRate,
-    conversionRate,
-  };
+export function getInsights(visits: any[], leads: any[]): Insights {
+const totalVisits = visits.length;
+
+// 🔥 usuarios únicos
+const sessionsMap: Record<string, number> = {};
+
+visits.forEach((v) => {
+sessionsMap[v.sessionId] = (sessionsMap[v.sessionId] || 0) + 1;
+});
+
+const uniqueUsers = Object.keys(sessionsMap).length;
+
+const revisits = Object.values(sessionsMap).filter(
+(count) => count > 1
+).length;
+
+const leadsCount = leads.length;
+
+// 🔥 LEADS
+const formLeads = leads.filter((l) => l.type === "form").length;
+const whatsappLeads = leads.filter((l) => l.type === "whatsapp").length;
+
+// 🔥 CONVERSIONES
+const conversionRate = uniqueUsers ? leadsCount / uniqueUsers : 0;
+const formConversion = uniqueUsers ? formLeads / uniqueUsers : 0;
+const whatsappConversion = uniqueUsers ? whatsappLeads / uniqueUsers : 0;
+
+// 🔥 QR vs WEB (FIX CLAVE)
+const qrVisits = visits.filter((v) => v.source === "qr").length;
+const webVisits = visits.filter((v) => v.source === "web").length;
+
+// 🔥 SCORE
+let rawScore =
+uniqueUsers * 1 +
+revisits * 2 +
+leadsCount * 10 +
+conversionRate * 100 * 5;
+
+let score = Math.min(100, rawScore);
+
+let status: PropertyStatus = "nuevo";
+
+if (score > 70) status = "alta_demanda";
+else if (score > 40) status = "interes_activo";
+else if (score < 20) status = "baja_demanda";
+
+return {
+totalVisits,
+uniqueUsers,
+revisits,
+leadsCount,
+
+
+formLeads,
+whatsappLeads,
+
+conversionRate,
+formConversion,
+whatsappConversion,
+
+qrVisits,
+webVisits,
+
+status,
+score,
+
+
+};
 }

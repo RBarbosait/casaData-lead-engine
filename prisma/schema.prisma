@@ -33,23 +33,19 @@ createdAt DateTime @default(now())
 }
 
 model Visit {
-id         String   @id @default(cuid())
-propertyId String
-property   Property @relation(fields: [propertyId], references: [id])
-
-source    String
-sessionId String
-
-createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  source     String
+  sessionId  String
+  createdAt  DateTime @default(now())
 }
 
 model Lead {
-id         String   @id @default(cuid())
-propertyId String
-property   Property @relation(fields: [propertyId], references: [id])
-
-type    String
-contact String?
-
-createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  type       String
+  contact    String?
+  createdAt  DateTime @default(now())
 }

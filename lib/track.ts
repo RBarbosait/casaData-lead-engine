@@ -1,13 +1,21 @@
-import { prisma } from "./prisma";
+import { prisma } from "./prisma"
 
-export async function trackVisit({ propertyId, source, sessionId }) {
+type TrackVisitParams = {
+  propertyId: string
+  source?: string
+  sessionId: string
+}
+
+export async function trackVisit({
+  propertyId,
+  source = "web",
+  sessionId,
+}: TrackVisitParams) {
   return prisma.visit.create({
     data: {
       propertyId,
       source,
       sessionId,
     },
-  });
-
-  
+  })
 }
