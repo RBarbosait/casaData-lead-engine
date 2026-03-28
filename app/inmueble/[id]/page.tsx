@@ -23,7 +23,6 @@ const propertyId = params.id as string
 const [property, setProperty] = useState<any>(null)
 const [copied, setCopied] = useState(false)
 
-// 🔥 MODAL
 const [showModal, setShowModal] = useState(false)
 const [dontShowAgain, setDontShowAgain] = useState(false)
 
@@ -32,7 +31,6 @@ const [contact, setContact] = useState("")
 const [loading, setLoading] = useState(false)
 const [sent, setSent] = useState(false)
 
-// 🔥 FETCH PROPERTY
 useEffect(() => {
 const load = async () => {
 const res = await fetch(`/api/property/${propertyId}`)
@@ -42,10 +40,8 @@ setProperty(data)
 load()
 }, [propertyId])
 
-// 🔥 TRACK + CONTROL MODAL
 useEffect(() => {
 if (!property) return
-
 
 const sessionId = getSessionId()
 
@@ -68,10 +64,8 @@ if (!dismissed) {
 
 }, [property])
 
-// 🔥 MENSAJE DINÁMICO
 const getMessage = () => {
 if (!property) return ""
-
 
 if (property.status === "nuevo")
   return "Sé el primero en interesarte en esta propiedad"
@@ -87,7 +81,6 @@ return "Esta propiedad está generando interés"
 
 }
 
-// 🔥 SUBMIT LEAD
 const handleSubmitLead = async () => {
 if (!name || !contact) return
 
@@ -111,7 +104,6 @@ setSent(true)
 
 }
 
-// 🔥 WHATSAPP
 const handleWhatsApp = async () => {
 await fetch("/api/lead", {
 method: "POST",
@@ -132,7 +124,6 @@ window.open(`https://wa.me/${property.agentPhone}?text=${msg}`)
 
 }
 
-// 🔥 EMAIL
 const handleEmail = async () => {
 await fetch("/api/lead", {
 method: "POST",
@@ -144,21 +135,16 @@ type: "form",
 })
 
 
-window.location.href = `mailto:${property.agentEmail}?subject=Consulta propiedad&body=Hola, me interesa ${property.title}`
+window.location.href = `mailto:${property.agentEmail}`
 
 
 }
 
-// 🔥 CLOSE MODAL CON CONTROL
 const handleCloseModal = () => {
 if (dontShowAgain) {
 localStorage.setItem(`modal_dismissed_${propertyId}`, "true")
 }
-
-
 setShowModal(false)
-
-
 }
 
 const copyLink = async () => {
@@ -169,12 +155,12 @@ setTimeout(() => setCopied(false), 2000)
 
 if (!property) return <div className="p-10">Cargando...</div>
 
-return ( <div className="min-h-screen bg-background">
+return ( <div className="min-h-screen bg-gray-50">
 
 
   {/* HEADER */}
-  <header className="border-b sticky top-0 bg-white z-40">
-    <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between">
+  <header className="border-b bg-white">
+    <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between">
       <Button variant="ghost" onClick={() => router.push("/inmuebles")}>
         <ArrowLeft className="w-4 h-4 mr-1" /> Volver
       </Button>
@@ -186,98 +172,91 @@ return ( <div className="min-h-screen bg-background">
     </div>
   </header>
 
-  <div className="max-w-4xl mx-auto p-6 grid md:grid-cols-3 gap-6">
+  <div className="max-w-5xl mx-auto px-6 py-10 grid md:grid-cols-3 gap-8">
 
     {/* MAIN */}
-    <div className="md:col-span-2 space-y-4">
-      <img src={property.image} className="w-full h-80 object-cover rounded-lg" />
+    <div className="md:col-span-2 space-y-6">
+      <img src={property.image} className="w-full h-[420px] object-cover rounded-2xl" />
 
-      <h1 className="text-2xl font-bold">{property.title}</h1>
-      <p className="text-muted-foreground">{property.address}</p>
+      <div>
+        <h1 className="text-3xl font-semibold">{property.title}</h1>
+        <p className="text-gray-500">{property.address}</p>
+      </div>
 
-      <div className="text-emerald-600 font-medium">
+      <div className="text-blue-600 font-medium">
         {getMessage()}
       </div>
 
-      <p>{property.description}</p>
+      <p className="text-gray-700">{property.description}</p>
     </div>
 
     {/* SIDEBAR */}
-    <div>
-      <Card>
+    <div className="space-y-4">
+
+      <Card className="rounded-2xl shadow-sm border border-gray-100">
         <CardHeader>
           <CardTitle>Contacto</CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-3">
 
-          <Button className="w-full" onClick={handleWhatsApp}>
+          <Button className="w-full h-11 rounded-xl" onClick={handleWhatsApp}>
             <Phone className="w-4 h-4 mr-2" />
-            Escribir por WhatsApp
+            WhatsApp
           </Button>
 
-          <Button variant="outline" className="w-full" onClick={handleEmail}>
-            Enviar email
+          <Button variant="outline" className="w-full h-11 rounded-xl" onClick={handleEmail}>
+            Email
           </Button>
 
-          <Button
-            variant="ghost"
-            className="w-full"
-            onClick={() => setShowModal(true)}
-          >
+          <Button variant="ghost" className="w-full" onClick={() => setShowModal(true)}>
             Dejar mis datos
           </Button>
 
         </CardContent>
       </Card>
+
     </div>
   </div>
 
-  {/* 🔥 MODAL */}
+  {/* MODAL */}
   {showModal && (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
 
-      <div className="bg-white rounded-xl p-6 w-full max-w-md relative">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md relative shadow-xl">
 
-        {/* CLOSE */}
         <button
-          className="absolute top-3 right-3 text-gray-400 hover:text-black"
+          className="absolute top-3 right-3 text-gray-400"
           onClick={handleCloseModal}
         >
           <X size={18} />
         </button>
 
-        <h2 className="text-lg font-semibold mb-2">
+        <h2 className="text-xl font-semibold mb-2">
           {getMessage()}
         </h2>
 
-        <p className="text-sm text-muted-foreground mb-4">
+        <p className="text-sm text-gray-500 mb-4">
           Dejá tu contacto y te escriben
         </p>
 
         {!sent ? (
           <>
             <input
-              type="text"
               placeholder="Tu nombre"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full border rounded-md p-2 text-sm mb-2"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 mb-2"
             />
 
             <input
-              type="text"
               placeholder="Email o teléfono"
               value={contact}
               onChange={(e) => setContact(e.target.value)}
-              className="w-full border rounded-md p-2 text-sm mb-3"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 mb-3"
             />
 
-            <Button
-              className="w-full"
-              onClick={handleSubmitLead}
-              disabled={loading}
-            >
+            <Button className="w-full h-11 rounded-xl" onClick={handleSubmitLead}>
               {loading ? "Enviando..." : "Quiero que me contacten"}
             </Button>
 
@@ -287,7 +266,7 @@ return ( <div className="min-h-screen bg-background">
                 checked={dontShowAgain}
                 onChange={(e) => setDontShowAgain(e.target.checked)}
               />
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-gray-500">
                 No volver a mostrar
               </span>
             </div>
@@ -301,7 +280,8 @@ return ( <div className="min-h-screen bg-background">
       </div>
     </div>
   )}
+</div>
 
-</div>)
 
+)
 }

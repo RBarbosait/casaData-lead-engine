@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { getInsights } from "@/lib/analytics";
+import QRCard from "@/components/dashboard/qr-card";
+
+
 
 export default async function Page({ params }: { params: { id: string } }) {
 const property = await prisma.property.findUnique({
@@ -35,6 +38,11 @@ return ( <div className="p-8 space-y-8 bg-gray-50 min-h-screen max-w-5xl mx-auto
   <div>
     <h1 className="text-3xl font-bold">{property.title}</h1>
     <p className="text-muted-foreground">{property.location}</p>
+    <QRCard
+  propertyId={property.id}
+  title={property.title}
+  address={property.address}
+/>
   </div>
 
   {/* 🔥 ESTADO + SCORE */}
