@@ -7,7 +7,8 @@
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "install": "pnpm install --no-frozen-lockfile"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
