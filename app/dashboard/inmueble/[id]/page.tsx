@@ -41,7 +41,7 @@ return ( <div className="p-8 space-y-8 bg-gray-50 min-h-screen max-w-5xl mx-auto
     <QRCard
   propertyId={property.id}
   title={property.title}
-  address={property.address}
+  address={property.location}
 />
   </div>
 
