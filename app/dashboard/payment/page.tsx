@@ -107,7 +107,7 @@ export default function PaymentPage() {
           plan.type === "subscription"
             ? new Date(Date.now() + (plan.id === "annual" ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
             : null,
-        paidPublications: plan.type === "single" ? (user.paidPublications || 0) + 1 : user.paidPublications || 0,
+        paidPublications: plan.type === "single" ? 1 : 0,
       }
 
       localStorage.setItem("casadata_user", JSON.stringify(updatedUser))
