@@ -100,15 +100,14 @@ export default function PaymentPage() {
 
       // Update user subscription
       const updatedUser = {
-        ...user,
-        subscriptionType: plan.type === "single" ? null : plan.name,
-        freePublicationUsed: plan.type === "single" ? user.freePublicationUsed : true,
-        subscriptionExpiry:
-          plan.type === "subscription"
-            ? new Date(Date.now() + (plan.id === "annual" ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
-            : null,
-        paidPublications: plan.type === "single" ? 1 : 0,
-      }
+  ...user,
+  subscriptionType: plan.type === "single" ? null : plan.name,
+  freePublicationUsed: plan.type === "single" ? user.freePublicationUsed : true,
+  subscriptionExpiry:
+    plan.type === "subscription"
+      ? new Date(Date.now() + (plan.id === "annual" ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
+      : null,
+}
 
       localStorage.setItem("casadata_user", JSON.stringify(updatedUser))
       setIsProcessing(false)
