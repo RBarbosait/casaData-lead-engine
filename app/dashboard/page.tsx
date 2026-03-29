@@ -17,7 +17,6 @@ interface User {
   subscriptionType: string | null
   subscriptionExpiry?: string
   subscriptionStatus?: string
-  paidPublications?: number
 }
 
 export default function DashboardPage() {
@@ -27,7 +26,6 @@ export default function DashboardPage() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Check if user is logged in
     const userData = localStorage.getItem("casadata_user")
     if (!userData) {
       router.push("/auth/login")
@@ -36,8 +34,6 @@ export default function DashboardPage() {
 
     const parsedUser = JSON.parse(userData)
     setUser(parsedUser)
-
-    // Load user properties
     setProperties(getUserProperties())
   }, [router])
 
@@ -85,12 +81,11 @@ export default function DashboardPage() {
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center space-x-2">
-                <img src="/casadata-logo.png" alt="casaData" className="w-8 h-8" />
-                <span className="font-bold text-xl">casaData</span>
-              </Link>
-            </div>
+
+            <Link href="/" className="flex items-center space-x-2">
+              <img src="/casadata-logo.png" alt="casaData" className="w-8 h-8" />
+              <span className="font-bold text-xl">casaData</span>
+            </Link>
 
             <div className="flex items-center space-x-4">
               <Link href="/inmuebles">
@@ -111,17 +106,19 @@ export default function DashboardPage() {
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
+
           </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Success Alerts */}
+
+        {/* Alerts */}
         {showPublishedAlert && (
           <Alert className="mb-6 border-green-200 bg-green-50">
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              ¡Publicación creada exitosamente! Tu propiedad ya está visible para todos los usuarios.
+              ¡Publicación creada exitosamente!
             </AlertDescription>
           </Alert>
         )}
@@ -130,19 +127,22 @@ export default function DashboardPage() {
           <Alert className="mb-6 border-green-200 bg-green-50">
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              ¡Suscripción activada! Ahora puedes crear publicaciones ilimitadas.
+              ¡Suscripción activada!
             </AlertDescription>
           </Alert>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+
           {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <div>
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Mi Cuenta</CardTitle>
               </CardHeader>
+
               <CardContent className="space-y-4">
+
                 <div className="flex items-center space-x-3">
                   <Avatar>
                     <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
@@ -153,168 +153,84 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  {!user.freePublicationUsed && (
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-                      <div className="flex items-center space-x-2">
-                        <Gift className="w-4 h-4 text-emerald-600" />
-                        <span className="text-sm font-medium text-emerald-800">Publicación gratis disponible</span>
-                      </div>
+                {!user.freePublicationUsed && (
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                    <div className="flex items-center space-x-2">
+                      <Gift className="w-4 h-4 text-emerald-600" />
+                      <span className="text-sm text-emerald-800">
+                        Publicación gratis disponible
+                      </span>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {user.subscriptionType && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                      <div className="flex items-center space-x-2">
-                        <Crown className="w-4 h-4 text-yellow-600" />
-                        <div>
-                          <span className="text-sm font-medium text-yellow-800 block">{user.subscriptionType}</span>
-                          {user.subscriptionExpiry && (
-                            <span className="text-xs text-yellow-700">
-                              Vence: {new Date(user.subscriptionExpiry).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                {user.subscriptionType && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <div className="flex items-center space-x-2">
+                      <Crown className="w-4 h-4 text-yellow-600" />
+                      <span className="text-sm text-yellow-800">
+                        {user.subscriptionType}
+                      </span>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {user.paidPublications && user.paidPublications > 0 && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <div className="flex items-center space-x-2">
-                        <Plus className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-800">
-                          {user.paidPublications} publicaciones pagadas
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Button variant="ghost" className="w-full justify-start" size="sm">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Configuración
+                <Link href="/dashboard/payment">
+                  <Button variant="outline" className="w-full">
+                    <Crown className="w-4 h-4 mr-2" />
+                    Ver planes
                   </Button>
+                </Link>
 
-                  {user.subscriptionType ? (
-                    <Link href="/dashboard/subscription">
-                      <Button variant="ghost" className="w-full justify-start" size="sm">
-                        <Crown className="w-4 h-4 mr-2" />
-                        Gestionar suscripción
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Link href="/dashboard/payment">
-                      <Button variant="outline" className="w-full justify-start bg-transparent" size="sm">
-                        <Crown className="w-4 h-4 mr-2" />
-                        Actualizar plan
-                      </Button>
-                    </Link>
-                  )}
-                </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Main Content */}
+          {/* Main */}
           <div className="lg:col-span-3 space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Publicaciones</p>
-                      <p className="text-2xl font-bold">{properties.length}</p>
-                    </div>
-                    <Home className="w-8 h-8 text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
 
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Visualizaciones</p>
-                      <p className="text-2xl font-bold">{properties.reduce((acc, prop) => acc + prop.views, 0)}</p>
-                    </div>
-                    <Eye className="w-8 h-8 text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Activas</p>
-                      <p className="text-2xl font-bold">{properties.filter((p) => p.status === "active").length}</p>
-                    </div>
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Properties Section */}
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Mis Publicaciones</CardTitle>
-                    <CardDescription>Gestiona tus propiedades publicadas</CardDescription>
-                  </div>
-                  <Link href="/dashboard/publish">
-                    <Button>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Nueva Publicación
-                    </Button>
-                  </Link>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Mis Publicaciones</CardTitle>
+                  <CardDescription>Gestiona tus propiedades</CardDescription>
                 </div>
+
+                <Link href="/dashboard/publish">
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nueva
+                  </Button>
+                </Link>
               </CardHeader>
+
               <CardContent>
+
                 {properties.length === 0 ? (
                   <div className="text-center py-12">
-                    <Home className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No tienes publicaciones</h3>
-                    <p className="text-muted-foreground mb-4">Comienza publicando tu primera propiedad</p>
-                    <Link href="/dashboard/publish">
-                      <Button>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Crear primera publicación
-                      </Button>
-                    </Link>
+                    <Home className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                    <p>No tienes publicaciones aún</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {properties.map((property) => (
-                      <div key={property.id} className="flex items-center space-x-4 p-4 border rounded-lg">
-                        <img
-                          src={property.image || "/placeholder.svg"}
-                          alt={property.title}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <h4 className="font-medium">{property.title}</h4>
-                          <p className="text-sm text-muted-foreground">{property.address}</p>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <Badge variant="secondary">{property.type}</Badge>
-                            <Badge className={getStatusColor(property.status)}>{getStatusText(property.status)}</Badge>
-                            <span className="text-sm text-muted-foreground">{property.views} visualizaciones</span>
-                          </div>
+                    {properties.map((p) => (
+                      <div key={p.id} className="flex justify-between border p-4 rounded-lg">
+                        <div>
+                          <h4 className="font-medium">{p.title}</h4>
+                          <p className="text-sm text-gray-500">{p.address}</p>
+                          <Badge className={getStatusColor(p.status)}>
+                            {getStatusText(p.status)}
+                          </Badge>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Link href={`/inmueble/${property.id}`}>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </Link>
-                          <Button variant="ghost" size="sm">
+
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="ghost">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost">
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button size="sm" variant="ghost">
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
@@ -322,8 +238,10 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 )}
+
               </CardContent>
             </Card>
+
           </div>
         </div>
       </div>
