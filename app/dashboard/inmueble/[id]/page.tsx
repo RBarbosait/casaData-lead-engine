@@ -3,7 +3,7 @@ import { getInsights } from "@/lib/analytics";
 import QRCard from "@/components/dashboard/qr-card";
 
 
-
+export const runtime = 'edge'
 export default async function Page({ params }: { params: { id: string } }) {
 const property = await prisma.property.findUnique({
 where: { id: params.id },

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
+export const runtime = 'edge'
 export async function POST(req: Request) {
 try {
 const body = await req.json();

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Copy, Phone, X } from "lucide-react"
 
+export const runtime = 'edge'
 function getSessionId() {
 let session = localStorage.getItem("session_id")
 if (!session) {
