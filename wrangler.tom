@@ -1,9 +1,9 @@
-name = "casadata-lead"           # Nombre del Worker en Cloudflare
 type = "javascript"               # Tipo de proyecto (puede ser "javascript" o "webpack")
 account_id = "a695e2c3842d50cc3c4b3d727d5af727"    # Tu ID de cuenta de Cloudflare
 workers_dev = true                # Habilita la URL de preview tipo: *.workers.dev
-compatibility_date = "2026-03-25" # Fecha de compatibilidad de Workers
+name = "casadata-lead-engine"
+compatibility_date = "2026-03-28"
 
 [site]
-bucket = "./out"                  # Carpeta que contiene el sitio exportado (next export)
+bucket = ".vercel/output/static"
 entry-point = "workers-site"      # Punto de entrada del Worker
