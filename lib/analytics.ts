@@ -35,10 +35,30 @@ sessionsMap[v.sessionId] = (sessionsMap[v.sessionId] || 0) + 1;
 });
 
 const uniqueUsers = Object.keys(sessionsMap).length;
+const sessions = Object.values(sessionsMap)
 
-const revisits = Object.values(sessionsMap).filter(
-(count) => count > 1
-).length;
+const usersWhoRevisit = sessions.filter(c => c > 1).length
+
+const hotLeads = Object.entries(sessionsMap)
+  .filter(([_, count]) => count >= 3)
+  .map(([sessionId]) => {
+    const userVisits = visits.filter(v => v.sessionId === sessionId)
+
+    return {
+      sessionId,
+      visits: userVisits.length,
+      lastVisit: userVisits[userVisits.length - 1].createdAt,
+      source: userVisits[0].source,
+    }
+  })
+
+const revisits = sessions
+  .map(c => c - 1)
+  .reduce((a, b) => a + b, 0)
+
+const intensity = uniqueUsers
+  ? revisits / uniqueUsers
+  : 0
 
 const leadsCount = leads.length;
 
@@ -57,18 +77,20 @@ const webVisits = visits.filter((v) => v.source === "web").length;
 
 // 🔥 SCORE
 let rawScore =
-uniqueUsers * 1 +
-revisits * 2 +
-leadsCount * 10 +
-conversionRate * 100 * 5;
+  totalVisits * 5 +        // 👈 antes no lo usabas
+  uniqueUsers * 2 +
+  revisits * 8 +
+  leadsCount * 25 +
+  conversionRate * 100 * 10;
 
 let score = Math.min(100, rawScore);
 
 let status: PropertyStatus = "nuevo";
 
-if (score > 70) status = "alta_demanda";
-else if (score > 40) status = "interes_activo";
-else if (score < 20) status = "baja_demanda";
+if (score >= 70) status = "alta_demanda";
+else if (score >= 40) status = "interes_activo";
+else if (score > 0) status = "baja_demanda";
+else status = "nuevo";
 
 return {
 totalVisits,

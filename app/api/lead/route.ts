@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+//import { prisma } from "@/lib/prisma";
 
 export const runtime = 'edge'
 export async function POST(req: Request) {
@@ -12,13 +12,13 @@ if (!propertyId || !type) {
   return Response.json({ error: "Missing data" }, { status: 400 });
 }
 
-await prisma.lead.create({
+/*await prisma.lead.create({
   data: {
     propertyId,
     type,
     contact: contact || null,
   },
-});
+});*/
 
 return Response.json({ ok: true });
 
