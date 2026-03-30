@@ -163,6 +163,22 @@ if (sessionStorage.getItem(reactKey)) {
         type: "whatsapp",
       }),
     })
+    
+    useEffect(() => {
+  const start = Date.now()
+
+  return () => {
+    const timeSpent = Math.floor((Date.now() - start) / 1000)
+
+    navigator.sendBeacon(
+      "/api/track-time",
+      JSON.stringify({
+        propertyId,
+        timeSpent,
+      })
+    )
+  }
+}, [propertyId])
 
     const msg = encodeURIComponent(
       `Hola, me interesa esta propiedad: ${property.title}`
