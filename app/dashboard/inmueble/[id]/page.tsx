@@ -80,10 +80,19 @@ export default async function Page({ params }: { params: { id: string } }) {
   // =======================
 
   const normVisits = Math.min(visits.length / 50, 1)
+
+  // 🔥 FIX REAL (NO MÁS BUG DE BUILD)
+  const uniqueSessions = new Set(
+    visits.map((v: any) => v.sessionId)
+  ).size
+
   const normRevisits = Math.min(
-    visits.length ? (visits.length - new Set(visits.map((v:any)=>v.sessionId)).size) / visits.length : 0,
+    visits.length
+      ? (visits.length - uniqueSessions) / visits.length
+      : 0,
     1
   )
+
   const normTime = Math.min(avgTime / 30000, 1)
   const normReach = Math.min(avgReach / 4, 1)
   const normContact = Math.min(reachContactRate / 100, 1)
@@ -181,7 +190,6 @@ export default async function Page({ params }: { params: { id: string } }) {
             Combina visitas, tiempo, scroll y contacto
           </p>
         </div>
-
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -226,7 +234,9 @@ export default async function Page({ params }: { params: { id: string } }) {
           <p className="text-2xl font-bold">
             {highIntentUsers.length}
           </p>
-            </div>
+        </div>
       </div>
+
+    </div>
   )
 }
