@@ -1,4 +1,4 @@
-exportw const runtime = "edge"
+export const runtime = "edge"
 
 import { getInsights } from "@/lib/analytics"
 import QRCard from "@/components/dashboard/qr-card"
