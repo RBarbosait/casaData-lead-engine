@@ -224,12 +224,19 @@ export default function DashboardPage() {
                         </div>
 
                         <div className="flex gap-2">
-                          <Button size="sm" variant="ghost">
+                          {/* 🔥 FIX REAL */}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => router.push(`/dashboard/inmueble/${p.id}`)}
+                          >
                             <Eye className="w-4 h-4" />
                           </Button>
+
                           <Button size="sm" variant="ghost">
                             <Edit className="w-4 h-4" />
                           </Button>
+
                           <Button size="sm" variant="ghost">
                             <Trash2 className="w-4 h-4" />
                           </Button>
