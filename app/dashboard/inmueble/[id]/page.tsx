@@ -4,9 +4,10 @@ import { getInsights } from "@/lib/analytics"
 import QRCard from "@/components/dashboard/qr-card"
 
 export default async function Page({ params }: { params: { id: string } }) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/property/${params.id}`, {
-    cache: "no-store",
-  })
+const res = await fetch(
+  `https://casadata-api-production.up.railway.app/property/${params.id}`,
+  { cache: "no-store" }
+)
 
   if (!res.ok) {
     throw new Error("Error fetching property")
@@ -14,10 +15,10 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const property = await res.json()
 
-  getInsights(
+  const insights = getInsights(
   property.visits,
   property.leads,
-  property.sessionAnalytics // 👈 CLAVE
+  property.sessionAnalytics
 )
 
   // 🔥 MODELO REAL (basado en tiempo, no session)
