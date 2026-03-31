@@ -16,9 +16,9 @@ const res = await fetch(
   const property = await res.json()
 
   const insights = getInsights(
-  property.visits,
-  property.leads,
-  property.sessionAnalytics
+  property.visits || [],
+  property.leads || [],
+  property.sessionAnalytics || []
 )
 
   // 🔥 MODELO REAL (basado en tiempo, no session)
