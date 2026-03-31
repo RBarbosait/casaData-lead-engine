@@ -227,6 +227,4 @@ export default async function Page({ params }: { params: { id: string } }) {
             {highIntentUsers.length}
           </p>
         </div>
-      </div>
-
-      {/* TODO tu código original sigue EXACTAMENTE igual abajo */}
+      </div
