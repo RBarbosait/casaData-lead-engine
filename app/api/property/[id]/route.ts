@@ -1,4 +1,4 @@
-export const runtime="edge"
+export const runtime = "edge"
 
 import { prisma } from "@/lib/prisma";
 
@@ -9,10 +9,20 @@ export async function GET(
   try {
     const property = await prisma.property.findUnique({
       where: { id: params.id },
+      include: {
+        visits: true,
+        leads: true,
+        sessionAnalytics: true, // 🔥 CLAVE
+      },
     });
 
     return Response.json(property);
   } catch (error) {
-    return Response.json({ error: "Error" }, { status: 500 });
+    console.error("PROPERTY ERROR", error)
+
+    return Response.json(
+      { error: "Error fetching property" },
+      { status: 500 }
+    );
   }
 }
