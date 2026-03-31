@@ -10,7 +10,7 @@ export async function GET(
       include: {
         visits: true,
         leads: true,
-        sessionAnalytics: true, // 🔥 CLAVE
+      //  sessionAnalytics: true, // 🔥 CLAVE
       },
     });
 
