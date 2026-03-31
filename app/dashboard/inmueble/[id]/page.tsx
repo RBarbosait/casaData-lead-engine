@@ -1,13 +1,15 @@
-export const runtime="edge"
-export const dynamic="force-dynamic"
+export const runtime = "edge"
+export const dynamic = "force-dynamic"
+
 import { getInsights } from "@/lib/analytics"
 import QRCard from "@/components/dashboard/qr-card"
 
 export default async function Page({ params }: { params: { id: string } }) {
-const res = await fetch(
-  `https://casadata-api-production.up.railway.app/property/${params.id}`,
-  { cache: "no-store" }
-)
+
+  const res = await fetch(
+    `https://casadata-api-production.up.railway.app/property/${params.id}`,
+    { cache: "no-store" }
+  )
 
   if (!res.ok) {
     throw new Error("Error fetching property")
@@ -15,24 +17,29 @@ const res = await fetch(
 
   const property = await res.json()
 
+  // ✅ FIX GLOBAL (CLAVE)
+  const visits = property.visits || []
+  const leads = property.leads || []
+  const sessionAnalytics = property.sessionAnalytics || []
+
   const insights = getInsights(
-  property.visits || [],
-  property.leads || [],
-  property.sessionAnalytics || []
-)
+    visits,
+    leads,
+    sessionAnalytics
+  )
 
   // 🔥 MODELO REAL (basado en tiempo, no session)
-  const sortedVisits = [...property.visits].sort(
+  const sortedVisits = [...visits].sort(
     (a, b) =>
       new Date(a.createdAt).getTime() -
       new Date(b.createdAt).getTime()
   )
-   // 🔥 VISITAS REALES (RAW, sin agrupar)
-  const totalVisitsReal = property.visits.length
-  //
-  
-  const WINDOW = 1 * 60 * 1000 // 1 minuto
- 
+
+  // 🔥 VISITAS REALES
+  const totalVisitsReal = visits.length
+
+  const WINDOW = 1 * 60 * 1000
+
   let uniqueUsersReal = 0
   let lastClusterTime = 0
 
@@ -45,18 +52,17 @@ const res = await fetch(
     }
   })
 
-  // ✅ FIX REAL (NO agrupar visitas)
-  const totalVisits = property.visits.length
+  const totalVisits = visits.length
   const revisitsReal = totalVisits - uniqueUsersReal
 
   const intensityReal = uniqueUsersReal
     ? revisitsReal / uniqueUsersReal
     : 0
 
-  // 🔥 lógica original (NO SE TOCA)
+  // 🔥 lógica original
   const sessionsMap: Record<string, number> = {}
 
-  property.visits.forEach((v: any) => {
+  visits.forEach((v: any) => {
     sessionsMap[v.sessionId] = (sessionsMap[v.sessionId] || 0) + 1
   })
 
@@ -85,7 +91,6 @@ const res = await fetch(
   return (
     <div className="p-8 space-y-8 bg-gray-50 min-h-screen max-w-5xl mx-auto">
 
-      {/* HEADER */}
       <div>
         <h1 className="text-3xl font-bold">{property.title}</h1>
         <p className="text-muted-foreground">{property.location}</p>
@@ -97,7 +102,6 @@ const res = await fetch(
         />
       </div>
 
-      {/* ESTADO + SCORE */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="p-6 rounded-xl border bg-white">
           <p className="text-sm text-muted-foreground mb-2">Estado</p>
@@ -112,7 +116,6 @@ const res = await fetch(
         </div>
       </div>
 
-      {/* MÉTRICAS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 
         <div className="p-4 border rounded-xl bg-white">
@@ -137,7 +140,6 @@ const res = await fetch(
 
       </div>
 
-      {/* INTENSIDAD */}
       <div className="p-6 rounded-xl border bg-white">
         <h3 className="font-semibold mb-4">Intensidad de interés</h3>
         <p className="text-3xl font-bold">{intensityReal.toFixed(2)}</p>
@@ -146,22 +148,15 @@ const res = await fetch(
         </p>
       </div>
 
-      {/* QR vs WEB */}
       <div className="p-6 rounded-xl border bg-white">
         <h3 className="font-semibold mb-6">Origen del interés</h3>
 
         <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden mb-2">
-          <div
-            className="h-full bg-blue-500"
-            style={{ width: `${webPercent}%` }}
-          />
+          <div className="h-full bg-blue-500" style={{ width: `${webPercent}%` }} />
         </div>
 
         <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden mb-6">
-          <div
-            className="h-full bg-green-500"
-            style={{ width: `${qrPercent}%` }}
-          />
+          <div className="h-full bg-green-500" style={{ width: `${qrPercent}%` }} />
         </div>
 
         <div className="grid grid-cols-2 gap-6">
@@ -181,7 +176,6 @@ const res = await fetch(
         </div>
       </div>
 
-      {/* HOT LEADS */}
       <div className="p-6 rounded-xl border bg-white">
         <h3 className="font-semibold mb-4">🔥 Alta intención detectada</h3>
 
@@ -192,10 +186,10 @@ const res = await fetch(
         ) : (
           <div className="space-y-3">
             {hotLeads.map(([sessionId, count]) => {
-              const visits = property.visits.filter(
+              const visitsFiltered = visits.filter(
                 (v: any) => v.sessionId === sessionId
               )
-              const lastVisit = visits[visits.length - 1]
+              const lastVisit = visitsFiltered[visitsFiltered.length - 1]
 
               return (
                 <div key={sessionId} className="p-4 border rounded-lg flex justify-between">
@@ -216,23 +210,19 @@ const res = await fetch(
         )}
       </div>
 
-      {/* LEADS */}
       <div className="p-6 rounded-xl border bg-white">
         <h3 className="font-semibold mb-4">Personas interesadas</h3>
 
-        {property.leads.length === 0 ? (
+        {leads.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Aún no hay contactos
           </p>
         ) : (
           <div className="space-y-3">
-            {[...property.leads]
+            {[...leads]
               .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
               .map((lead: any) => (
-                <div
-                  key={lead.id}
-                  className="p-4 border rounded-lg flex justify-between"
-                >
+                <div key={lead.id} className="p-4 border rounded-lg flex justify-between">
                   <div>
                     <p className="font-medium">
                       {lead.type === "whatsapp" ? "WhatsApp" : "Formulario"}
