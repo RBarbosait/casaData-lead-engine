@@ -33,7 +33,7 @@ const [name, setName] = useState("")
 const [contact, setContact] = useState("")
 const [loading, setLoading] = useState(false)
 const [sent, setSent] = useState(false)
-31 de marzo de 2026 a las 9:49
+
 // cargar propiedad
 useEffect(() => {
 const load = async () => {
