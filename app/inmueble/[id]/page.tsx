@@ -276,6 +276,8 @@ export default function PropertyPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+
+      {/* HEADER */}
       <header className="border-b bg-white">
         <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between">
           <Button variant="ghost" onClick={() => router.push("/inmuebles")}>
@@ -290,6 +292,7 @@ export default function PropertyPage() {
         </div>
       </header>
 
+      {/* CONTENT */}
       <div className="max-w-5xl mx-auto px-6 py-10 grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-6">
           <img
@@ -333,6 +336,57 @@ export default function PropertyPage() {
           </Card>
         </div>
       </div>
+
+      {/* 🔥 MODAL FIX (AGREGADO) */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white w-full max-w-md rounded-2xl p-6 relative">
+
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-3 right-3"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {!sent ? (
+              <>
+                <h2 className="text-xl font-semibold mb-2">
+                  Dejá tus datos
+                </h2>
+
+                <div className="space-y-3">
+                  <input
+                    className="w-full border p-3 rounded-lg"
+                    placeholder="Nombre"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+
+                  <input
+                    className="w-full border p-3 rounded-lg"
+                    placeholder="Contacto"
+                    value={contact}
+                    onChange={(e) => setContact(e.target.value)}
+                  />
+
+                  <Button className="w-full" onClick={handleSubmitLead}>
+                    {loading ? "Enviando..." : "Enviar"}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center">
+                <p className="text-lg font-semibold">✅ Enviado</p>
+                <Button className="mt-4" onClick={handleCloseModal}>
+                  Cerrar
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
