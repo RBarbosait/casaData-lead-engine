@@ -14,7 +14,11 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const property = await res.json()
 
-  const insights = getInsights(property.visits, property.leads)
+  getInsights(
+  property.visits,
+  property.leads,
+  property.sessionAnalytics // 👈 CLAVE
+)
 
   // 🔥 MODELO REAL (basado en tiempo, no session)
   const sortedVisits = [...property.visits].sort(
