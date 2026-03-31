@@ -1,4 +1,4 @@
-import { getInsights } from "@/lib/analytics"
+export const runtime = "edge"
 import QRCard from "@/components/dashboard/qr-card"
 
 export default async function Page({ params }: { params: { id: string } }) {
