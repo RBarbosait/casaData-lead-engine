@@ -1,4 +1,4 @@
-export const runtime = "edge"
+exportw const runtime = "edge"
 
 import { getInsights } from "@/lib/analytics"
 import QRCard from "@/components/dashboard/qr-card"
@@ -226,5 +226,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           <p className="text-2xl font-bold">
             {highIntentUsers.length}
           </p>
-        </div>
-      </div
+            </div>
+      </div>
+  )
+}
