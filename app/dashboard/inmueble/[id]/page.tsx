@@ -62,7 +62,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   })
 
   const sortedReach = Object.entries(reachCounts).sort(
-    (a, b) => b[1] - a[1]
+    (a: any, b: any) => b[1] - a[1]
   )
 
   const highIntentUsers = sessionAnalytics.filter((s: any) => {
@@ -74,14 +74,10 @@ export default async function Page({ params }: { params: { id: string } }) {
   // 🔥 SCORE
   const normVisits = Math.min(visits.length / 50, 1)
 
-  const uniqueSessions = new Set(
-    visits.map((v: any) => v.sessionId)
-  ).size
+  const uniqueSessions = new Set(visits.map((v: any) => v.sessionId)).size
 
   const normRevisits = Math.min(
-    visits.length
-      ? (visits.length - uniqueSessions) / visits.length
-      : 0,
+    visits.length ? (visits.length - uniqueSessions) / visits.length : 0,
     1
   )
 
@@ -101,9 +97,8 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   // 🔥 VISITS
   const sortedVisits = [...visits].sort(
-    (a, b) =>
-      new Date(a.createdAt).getTime() -
-      new Date(b.createdAt).getTime()
+    (a: any, b: any) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   )
 
   const totalVisitsReal = visits.length
@@ -113,7 +108,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   let uniqueUsersReal = 0
   let lastClusterTime = 0
 
-  sortedVisits.forEach((visit) => {
+  sortedVisits.forEach((visit: any) => {
     const t = new Date(visit.createdAt).getTime()
     if (t - lastClusterTime > WINDOW) {
       uniqueUsersReal++
@@ -123,9 +118,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const revisitsReal = totalVisitsReal - uniqueUsersReal
 
-  const intensityReal = uniqueUsersReal
-    ? revisitsReal / uniqueUsersReal
-    : 0
+  const intensityReal = uniqueUsersReal ? revisitsReal / uniqueUsersReal : 0
 
   const sessionsMap: Record<string, number> = {}
 
@@ -133,9 +126,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     sessionsMap[v.sessionId] = (sessionsMap[v.sessionId] || 0) + 1
   })
 
-  const usersWhoRevisit = Object.values(sessionsMap).filter(
-    (c) => c > 1
-  ).length
+  const usersWhoRevisit = Object.values(sessionsMap).filter((c) => c > 1).length
 
   const hotLeads = Object.entries(sessionsMap)
     .filter(([_, count]) => count >= 3)
@@ -143,20 +134,21 @@ export default async function Page({ params }: { params: { id: string } }) {
       const sessionVisits = visits
         .filter((v: any) => v.sessionId === sessionId)
         .sort(
-          (a, b) =>
+          (a: any, b: any) =>
             new Date(a.createdAt).getTime() -
             new Date(b.createdAt).getTime()
         )
 
       const lastVisit = sessionVisits[sessionVisits.length - 1]
 
+      // 🔥 NUEVO: intentar detectar lead asociado
       const relatedLead = leads
         .filter((l: any) => l && l.createdAt)
         .sort(
-          (a, b) =>
+          (a: any, b: any) =>
             new Date(b.createdAt).getTime() -
             new Date(a.createdAt).getTime()
-        )[0]
+        )[0] // simple: último lead global (MVP válido)
 
       return {
         sessionId,
@@ -208,9 +200,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       <div className="grid md:grid-cols-2 gap-6">
         <div className="p-6 border bg-white rounded-xl">
           <p className="text-sm mb-2">Estado</p>
-          <h2 className={`font-bold ${safeStatus}`}>
-            {safeStatusText}
-          </h2>
+          <h2 className={`font-bold ${safeStatus}`}>{safeStatusText}</h2>
         </div>
 
         <div className="p-6 border bg-white rounded-xl">
@@ -232,9 +222,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       {/* INTENSIDAD */}
       <div className="p-6 border bg-white rounded-xl">
         <h3>Intensidad</h3>
-        <p className="text-3xl font-bold">
-          {safeNumber(intensityReal).toFixed(2)}
-        </p>
+        <p className="text-3xl font-bold">{safeNumber(intensityReal).toFixed(2)}</p>
       </div>
 
       {/* BEHAVIOR */}
@@ -260,7 +248,7 @@ export default async function Page({ params }: { params: { id: string } }) {
             Aún no hay datos de reach
           </p>
         ) : (
-          sortedReach.map(([section, count]) => {
+          sortedReach.map(([section, count]: any) => {
             const percent = totalSessions ? (count / totalSessions) * 100 : 0
             return <Bar key={section} label={section} value={percent} />
           })
@@ -292,6 +280,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                     Origen: {lead.source === "qr" ? "QR" : "Web"}
                   </p>
 
+                  {/* 🔥 NUEVO */}
                   {lead.lastVisitAt && (
                     <p className="text-xs text-muted-foreground">
                       Última visita:{" "}
@@ -331,7 +320,7 @@ export default async function Page({ params }: { params: { id: string } }) {
             {[...leads]
               .filter((l) => l && l.createdAt)
               .sort(
-                (a, b) =>
+                (a: any, b: any) =>
                   new Date(b.createdAt).getTime() -
                   new Date(a.createdAt).getTime()
               )
@@ -364,7 +353,6 @@ export default async function Page({ params }: { params: { id: string } }) {
   )
 }
 
-// 🔥 FIX AQUÍ (único cambio real)
 function Stat({ label, value }: any) {
   const displayValue =
     value === null || value === undefined
