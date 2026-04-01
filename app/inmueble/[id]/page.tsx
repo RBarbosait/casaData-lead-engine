@@ -67,6 +67,10 @@ function toStringArray(value: any) {
     .filter(Boolean)
 }
 
+function normalizePhone(value: any) {
+  return String(value || "").replace(/\D/g, "")
+}
+
 export default function PropertyPage() {
   const params = useParams()
   const router = useRouter()
@@ -80,6 +84,57 @@ export default function PropertyPage() {
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [selectedImage, setSelectedImage] = useState("")
+  const [showFullDescription, setShowFullDescription] = useState(false)
+
+  const demoProperty = {
+    title: "Alquiler Cordón 1 dorm balcón garage a estrenar",
+    price: 30000,
+    operationType: "Alquiler",
+    address: "Avenida Uruguay 1500, Cordón, Montevideo",
+    location: "Avenida Uruguay 1500, Cordón, Montevideo",
+    bedrooms: 1,
+    bathrooms: 1,
+    area: 55.5,
+    expenses: 4100,
+    floor: "5to piso",
+    parking: "Garage incluido",
+    orientation: "Norte",
+    code: "940051134-233",
+    createdAt: new Date().toISOString(),
+    description:
+      "Apartamento a estrenar en Cordón Norte con balcón y garage. Excelente luminosidad, distribución cómoda y terminaciones modernas. Ideal para vivir o invertir.",
+    highlights: [
+      "A estrenar",
+      "Balcón",
+      "Garage",
+      "Muy luminoso",
+      "Excelente ubicación",
+    ],
+    services: [
+      "Ascensor",
+      "Seguridad",
+      "Garaje",
+      "Cerca de transporte",
+      "Aire acondicionado",
+      "Placares",
+    ],
+    extras: [
+      "Acepta mascotas",
+      "No amueblado",
+      "Disponible de inmediato",
+      "Gastos comunes: $4.100",
+    ],
+    image:
+      "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&w=1200&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
+    ],
+    agentPhone: "59891234567",
+    agentEmail: "contacto@casadata.uy",
+  }
 
   const gallery: string[] = Array.from(
     new Set(
@@ -100,18 +155,29 @@ export default function PropertyPage() {
 
   const extras = toStringArray(property?.extras || property?.detailsList)
 
+  const activeProperty = property || demoProperty
+  const activeGallery = gallery.length > 0 ? gallery : demoProperty.images
+
   // =========================
   // LOAD PROPERTY
   // =========================
   useEffect(() => {
     fetch(`${API_URL}/property/${propertyId}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load property")
+        return r.json()
+      })
       .then(setProperty)
+      .catch(() => {
+        setProperty(demoProperty)
+      })
   }, [propertyId])
 
   useEffect(() => {
     if (gallery.length > 0) {
       setSelectedImage(gallery[0])
+    } else if (demoProperty.image) {
+      setSelectedImage(demoProperty.image)
     }
   }, [propertyId, property?.image, property?.images])
 
@@ -177,7 +243,7 @@ export default function PropertyPage() {
 
     const sessionId = getSessionId()
 
-    const sections = ["hero", "details", "features", "contact"]
+    const sections = ["hero", "details", "location", "features", "contact"]
     const seen = new Set<string>()
 
     let timeout: any
@@ -218,6 +284,7 @@ export default function PropertyPage() {
 
     return () => {
       window.removeEventListener("scroll", onScroll)
+      clearTimeout(timeout)
     }
   }, [propertyId])
 
@@ -261,9 +328,9 @@ export default function PropertyPage() {
   }
 
   const handleWhatsApp = async () => {
-    if (!property?.agentPhone) return
+    if (!activeProperty?.agentPhone) return
 
-    const phone = String(property.agentPhone).replace(/\D/g, "")
+    const phone = normalizePhone(activeProperty.agentPhone)
     const url = `https://wa.me/${phone}`
 
     trackContact()
@@ -282,7 +349,7 @@ export default function PropertyPage() {
   }
 
   const handleEmail = async () => {
-    if (!property?.agentEmail) return
+    if (!activeProperty?.agentEmail) return
 
     trackContact()
 
@@ -296,7 +363,7 @@ export default function PropertyPage() {
       }),
     })
 
-    window.location.href = `mailto:${property.agentEmail}`
+    window.location.href = `mailto:${activeProperty.agentEmail}`
   }
 
   const copyPropertyLink = async () => {
@@ -309,29 +376,57 @@ export default function PropertyPage() {
   // =========================
   // UI
   // =========================
-  if (!property) return <div className="p-10">Cargando...</div>
+  if (!property && !demoProperty) return <div className="p-10">Cargando...</div>
 
   const quickFacts: Array<{
     label: string
     value: string
     icon: any
   }> = [
-    property.operationType
-      ? { label: "Operación", value: property.operationType, icon: CalendarDays }
+    activeProperty.operationType
+      ? {
+          label: "Operación",
+          value: activeProperty.operationType,
+          icon: CalendarDays,
+        }
       : null,
     priceFormatted
       ? { label: "Precio", value: `$${priceFormatted}`, icon: CalendarDays }
       : null,
-    property.bedrooms
-      ? { label: "Dormitorios", value: String(property.bedrooms), icon: BedDouble }
+    activeProperty.bedrooms
+      ? {
+          label: "Dormitorios",
+          value: String(activeProperty.bedrooms),
+          icon: BedDouble,
+        }
       : null,
-    property.bathrooms
-      ? { label: "Baños", value: String(property.bathrooms), icon: Bath }
+    activeProperty.bathrooms
+      ? {
+          label: "Baños",
+          value: String(activeProperty.bathrooms),
+          icon: Bath,
+        }
       : null,
-    property.area
-      ? { label: "Superficie", value: `${property.area} m²`, icon: Ruler }
+    activeProperty.area
+      ? {
+          label: "Superficie",
+          value: `${activeProperty.area} m²`,
+          icon: Ruler,
+        }
       : null,
   ].filter(Boolean) as any
+
+  const displayHighlights = highlights.length
+    ? highlights
+    : toStringArray(activeProperty.highlights || demoProperty.highlights)
+
+  const displayServices = services.length
+    ? services
+    : toStringArray(activeProperty.services || demoProperty.services)
+
+  const displayExtras = extras.length
+    ? extras
+    : toStringArray(activeProperty.extras || demoProperty.extras)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -364,20 +459,20 @@ export default function PropertyPage() {
             <section className="space-y-3">
               <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wider text-gray-500">
                 <span>Ficha del inmueble</span>
-                {property.operationType && (
+                {activeProperty.operationType && (
                   <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700">
-                    {property.operationType}
+                    {activeProperty.operationType}
                   </span>
                 )}
-                {property.code && (
+                {activeProperty.code && (
                   <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700">
-                    Código {property.code}
+                    Código {activeProperty.code}
                   </span>
                 )}
               </div>
 
               <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900">
-                {property.title}
+                {activeProperty.title}
               </h1>
 
               {priceFormatted && (
@@ -386,9 +481,9 @@ export default function PropertyPage() {
                     ${priceFormatted}
                   </p>
 
-                  {property.operationType && (
+                  {activeProperty.operationType && (
                     <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
-                      {property.operationType}
+                      {activeProperty.operationType}
                     </span>
                   )}
                 </div>
@@ -397,7 +492,7 @@ export default function PropertyPage() {
               <div className="flex items-start gap-2 text-gray-600">
                 <MapPin className="w-4 h-4 mt-1 shrink-0" />
                 <p className="text-sm md:text-base">
-                  {property.address || property.location}
+                  {activeProperty.address || activeProperty.location}
                 </p>
               </div>
             </section>
@@ -407,15 +502,15 @@ export default function PropertyPage() {
               <Card className="overflow-hidden shadow-sm">
                 <div className="relative">
                   <img
-                    src={selectedImage || property.image}
-                    alt={property.title}
+                    src={selectedImage || activeProperty.image}
+                    alt={activeProperty.title}
                     className="w-full aspect-[16/11] object-cover"
                   />
 
                   <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-                    {property.operationType && (
+                    {activeProperty.operationType && (
                       <span className="rounded-full bg-black/70 text-white px-3 py-1 text-xs backdrop-blur">
-                        {property.operationType}
+                        {activeProperty.operationType}
                       </span>
                     )}
 
@@ -427,10 +522,10 @@ export default function PropertyPage() {
                   </div>
                 </div>
 
-                {gallery.length > 1 && (
+                {activeGallery.length > 1 && (
                   <div className="p-4 border-t bg-white">
                     <div className="flex gap-3 overflow-x-auto pb-1">
-                      {gallery.map((img: string, idx: number) => (
+                      {activeGallery.map((img: string, idx: number) => (
                         <button
                           key={`${img}-${idx}`}
                           onClick={() => setSelectedImage(img)}
@@ -442,7 +537,7 @@ export default function PropertyPage() {
                         >
                           <img
                             src={img}
-                            alt={`${property.title} ${idx + 1}`}
+                            alt={`${activeProperty.title} ${idx + 1}`}
                             className="w-24 h-16 object-cover"
                           />
                         </button>
@@ -486,58 +581,95 @@ export default function PropertyPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  {property.createdAt && (
+                  {activeProperty.createdAt && (
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <CalendarDays className="w-4 h-4" />
                       <span>
                         Publicado{" "}
-                        {new Date(property.createdAt).toLocaleDateString()}
+                        {new Date(activeProperty.createdAt).toLocaleDateString()}
                       </span>
                     </div>
                   )}
 
                   <div className="grid sm:grid-cols-2 gap-3">
-                    {property.floor && (
+                    {activeProperty.floor && (
                       <div className="rounded-xl bg-gray-50 border p-4">
                         <p className="text-sm font-medium text-gray-900">Piso</p>
                         <p className="text-sm text-gray-700 mt-1">
-                          {property.floor}
+                          {activeProperty.floor}
                         </p>
                       </div>
                     )}
 
-                    {property.expenses && (
+                    {activeProperty.expenses && (
                       <div className="rounded-xl bg-gray-50 border p-4">
                         <p className="text-sm font-medium text-gray-900">
                           Gastos comunes
                         </p>
                         <p className="text-sm text-gray-700 mt-1">
-                          ${property.expenses}
+                          ${activeProperty.expenses}
                         </p>
                       </div>
                     )}
 
-                    {property.parking && (
+                    {activeProperty.parking && (
                       <div className="rounded-xl bg-gray-50 border p-4">
                         <p className="text-sm font-medium text-gray-900">
                           Garage
                         </p>
                         <p className="text-sm text-gray-700 mt-1">
-                          {property.parking}
+                          {activeProperty.parking}
                         </p>
                       </div>
                     )}
 
-                    {property.orientation && (
+                    {activeProperty.orientation && (
                       <div className="rounded-xl bg-gray-50 border p-4">
                         <p className="text-sm font-medium text-gray-900">
                           Orientación
                         </p>
                         <p className="text-sm text-gray-700 mt-1">
-                          {property.orientation}
+                          {activeProperty.orientation}
                         </p>
                       </div>
                     )}
+
+                    {activeProperty.code && (
+                      <div className="rounded-xl bg-gray-50 border p-4">
+                        <p className="text-sm font-medium text-gray-900">
+                          Código de publicación
+                        </p>
+                        <p className="text-sm text-gray-700 mt-1">
+                          {activeProperty.code}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* LOCATION */}
+            <section id="location">
+              <Card className="shadow-sm">
+                <CardHeader>
+                  <CardTitle>Ubicación</CardTitle>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <div className="text-gray-700 text-sm md:text-base">
+                    {activeProperty.address || activeProperty.location}
+                  </div>
+
+                  <div className="rounded-2xl overflow-hidden border bg-white">
+                    <div className="h-64 bg-gradient-to-br from-slate-100 via-white to-slate-200 flex items-center justify-center relative">
+                      <div className="text-center">
+                        <MapPin className="w-10 h-10 mx-auto text-red-500" />
+                        <p className="mt-2 text-sm text-gray-600">
+                          Mapa de ubicación
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -551,10 +683,23 @@ export default function PropertyPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  {property.description ? (
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-line text-[15px]">
-                      {property.description}
-                    </p>
+                  {activeProperty.description ? (
+                    <>
+                      <p
+                        className={`text-gray-700 leading-relaxed whitespace-pre-line text-[15px] ${
+                          showFullDescription ? "" : "line-clamp-4"
+                        }`}
+                      >
+                        {activeProperty.description}
+                      </p>
+
+                      <button
+                        onClick={() => setShowFullDescription((v) => !v)}
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900 hover:underline"
+                      >
+                        {showFullDescription ? "Ver menos" : "Ver más"} +
+                      </button>
+                    </>
                   ) : (
                     <p className="text-sm text-gray-500">
                       Aún no hay descripción cargada.
@@ -586,7 +731,7 @@ export default function PropertyPage() {
             </section>
 
             {/* HIGHLIGHTS */}
-            {highlights.length > 0 && (
+            {displayHighlights.length > 0 && (
               <section>
                 <Card className="shadow-sm">
                   <CardHeader>
@@ -594,7 +739,7 @@ export default function PropertyPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
-                      {highlights.map((item) => (
+                      {displayHighlights.map((item) => (
                         <span
                           key={item}
                           className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm"
@@ -609,7 +754,7 @@ export default function PropertyPage() {
             )}
 
             {/* SERVICES */}
-            {services.length > 0 && (
+            {displayServices.length > 0 && (
               <section>
                 <Card className="shadow-sm">
                   <CardHeader>
@@ -617,7 +762,7 @@ export default function PropertyPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {services.map((item) => (
+                      {displayServices.map((item) => (
                         <div
                           key={item}
                           className="rounded-xl border bg-white px-3 py-2 text-sm text-gray-700"
@@ -632,7 +777,7 @@ export default function PropertyPage() {
             )}
 
             {/* EXTRAS */}
-            {extras.length > 0 && (
+            {displayExtras.length > 0 && (
               <section>
                 <Card className="shadow-sm">
                   <CardHeader>
@@ -640,7 +785,7 @@ export default function PropertyPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid md:grid-cols-2 gap-2">
-                      {extras.map((item) => (
+                      {displayExtras.map((item) => (
                         <div
                           key={item}
                           className="rounded-xl border bg-gray-50 px-3 py-2 text-sm text-gray-700"
@@ -663,7 +808,7 @@ export default function PropertyPage() {
               </CardHeader>
 
               <CardContent className="space-y-3">
-                {property.agentPhone && (
+                {activeProperty.agentPhone && (
                   <Button
                     onClick={handleWhatsApp}
                     className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-base font-medium"
@@ -673,10 +818,10 @@ export default function PropertyPage() {
                   </Button>
                 )}
 
-                {property.agentPhone && (
+                {activeProperty.agentPhone && (
                   <Button
                     onClick={() => {
-                      const phone = String(property.agentPhone).replace(/\D/g, "")
+                      const phone = normalizePhone(activeProperty.agentPhone)
                       window.location.href = `tel:${phone}`
                     }}
                     variant="outline"
@@ -687,7 +832,7 @@ export default function PropertyPage() {
                   </Button>
                 )}
 
-                {property.agentEmail && (
+                {activeProperty.agentEmail && (
                   <Button
                     onClick={handleEmail}
                     variant="outline"
@@ -730,12 +875,14 @@ export default function PropertyPage() {
               <CardContent className="space-y-3 text-sm text-gray-700">
                 <div className="flex justify-between gap-4">
                   <span className="text-gray-500">Título</span>
-                  <span className="text-right font-medium">{property.title}</span>
+                  <span className="text-right font-medium">
+                    {activeProperty.title}
+                  </span>
                 </div>
                 <div className="flex justify-between gap-4">
                   <span className="text-gray-500">Ubicación</span>
                   <span className="text-right font-medium">
-                    {property.address || property.location}
+                    {activeProperty.address || activeProperty.location}
                   </span>
                 </div>
                 {priceFormatted && (
@@ -746,11 +893,19 @@ export default function PropertyPage() {
                     </span>
                   </div>
                 )}
-                {property.operationType && (
+                {activeProperty.operationType && (
                   <div className="flex justify-between gap-4">
                     <span className="text-gray-500">Operación</span>
                     <span className="text-right font-medium">
-                      {property.operationType}
+                      {activeProperty.operationType}
+                    </span>
+                  </div>
+                )}
+                {activeProperty.code && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-gray-500">Código</span>
+                    <span className="text-right font-medium">
+                      {activeProperty.code}
                     </span>
                   </div>
                 )}
@@ -762,7 +917,7 @@ export default function PropertyPage() {
 
       {/* MOBILE STICKY BAR */}
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-white shadow-lg p-3 flex gap-2 lg:hidden">
-        {property?.agentPhone && (
+        {activeProperty.agentPhone && (
           <button
             onClick={handleWhatsApp}
             className="flex-1 rounded-xl bg-green-600 text-white py-3 text-sm font-medium"
@@ -771,10 +926,10 @@ export default function PropertyPage() {
           </button>
         )}
 
-        {property?.agentPhone && (
+        {activeProperty.agentPhone && (
           <button
             onClick={() => {
-              const phone = String(property.agentPhone).replace(/\D/g, "")
+              const phone = normalizePhone(activeProperty.agentPhone)
               window.location.href = `tel:${phone}`
             }}
             className="flex-1 rounded-xl border py-3 text-sm font-medium"
