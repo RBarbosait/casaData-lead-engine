@@ -40,12 +40,12 @@ model Visit {
   sessionId  String
   createdAt  DateTime @default(now())
 }
-
 model Lead {
   id         String   @id @default(cuid())
   propertyId String
   property   Property @relation(fields: [propertyId], references: [id])
   type       String
   contact    String?
+  sessionId  String?   // 🔥 FIX CLAVE
   createdAt  DateTime @default(now())
 }
