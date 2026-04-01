@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,9 @@ export const runtime = "edge"
 
 const API_URL = "https://casadata-api-production.up.railway.app"
 
-// 🔥 FIX GLOBAL (CLAVE)
+// =========================
+// 🔥 SEND SAFE (NO PÉRDIDA DE EVENTOS)
+// =========================
 function sendData(url: string, data: any) {
   const payload = JSON.stringify(data)
 
@@ -27,6 +29,9 @@ function sendData(url: string, data: any) {
   }
 }
 
+// =========================
+// SESSION
+// =========================
 function getSessionId() {
   if (typeof window === "undefined") return "server"
 
@@ -58,6 +63,10 @@ export default function PropertyPage() {
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
 
+  // 🔥 refs para evitar duplicados
+  const timeSent = useRef(false)
+  const reachSent = useRef(false)
+
   // =========================
   // LOAD PROPERTY
   // =========================
@@ -79,28 +88,13 @@ export default function PropertyPage() {
     if (!property) return
 
     const sessionId = getSessionId()
+
     const key = `last_visit_${propertyId}_${sessionId}`
     const lastVisit = Number(localStorage.getItem(key) || 0)
 
-    const reactKey = `react_fix_${propertyId}_${sessionId}`
-
-    let allowTracking = true
-
-    if (sessionStorage.getItem(reactKey)) {
-      allowTracking = false
-    } else {
-      sessionStorage.setItem(reactKey, "1")
-      setTimeout(() => {
-        sessionStorage.removeItem(reactKey)
-      }, 2000)
-    }
-
     const TTL = 15000
 
-    const shouldTrack =
-      !lastVisit || isNaN(lastVisit) || Date.now() - lastVisit > TTL
-
-    if (shouldTrack && allowTracking) {
+    if (!lastVisit || Date.now() - lastVisit > TTL) {
       localStorage.setItem(key, String(Date.now()))
 
       sendData(`${API_URL}/track`, {
@@ -111,15 +105,11 @@ export default function PropertyPage() {
       })
     }
 
-    const dismissed = localStorage.getItem(
-      `modal_dismissed_${propertyId}`
-    )
+    // modal delay
+    const dismissed = localStorage.getItem(`modal_dismissed_${propertyId}`)
 
     if (!dismissed) {
-      const timer = setTimeout(() => {
-        setShowModal(true)
-      }, 1500)
-
+      const timer = setTimeout(() => setShowModal(true), 1500)
       return () => clearTimeout(timer)
     }
   }, [property, propertyId])
@@ -135,6 +125,9 @@ export default function PropertyPage() {
     const start = Date.now()
 
     const sendTime = () => {
+      if (timeSent.current) return
+      timeSent.current = true
+
       const timeSpent = Math.max(1000, Date.now() - start)
 
       sendData(`${API_URL}/track-time`, {
@@ -167,6 +160,8 @@ export default function PropertyPage() {
     let timeout: any
 
     const send = () => {
+      if (reachSent.current) return
+
       sendData(`${API_URL}/track-reach`, {
         propertyId,
         sessionId,
@@ -180,20 +175,20 @@ export default function PropertyPage() {
         if (!el) return
 
         const rect = el.getBoundingClientRect()
-
         if (rect.top < window.innerHeight * 0.7) {
           seen.add(id)
         }
       })
 
       clearTimeout(timeout)
-      timeout = setTimeout(send, 1000)
+      timeout = setTimeout(send, 800)
     }
 
     onScroll()
     window.addEventListener("scroll", onScroll, { passive: true })
 
     return () => {
+      reachSent.current = true
       window.removeEventListener("scroll", onScroll)
       send()
     }
@@ -214,7 +209,7 @@ export default function PropertyPage() {
   }
 
   // =========================
-  // UI LOGIC
+  // UI
   // =========================
 
   const getMessage = () => {
@@ -240,9 +235,7 @@ export default function PropertyPage() {
 
     await fetch(`${API_URL}/lead`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         propertyId,
         type: "form",
@@ -260,9 +253,7 @@ export default function PropertyPage() {
 
     await fetch(`${API_URL}/lead`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         propertyId,
         type: "whatsapp",
@@ -281,9 +272,7 @@ export default function PropertyPage() {
 
     await fetch(`${API_URL}/lead`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         propertyId,
         type: "form",
@@ -295,12 +284,8 @@ export default function PropertyPage() {
 
   const handleCloseModal = () => {
     if (dontShowAgain) {
-      localStorage.setItem(
-        `modal_dismissed_${propertyId}`,
-        "true"
-      )
+      localStorage.setItem(`modal_dismissed_${propertyId}`, "true")
     }
-
     setShowModal(false)
   }
 
@@ -358,9 +343,11 @@ export default function PropertyPage() {
               <Button className="w-full" onClick={handleWhatsApp}>
                 WhatsApp
               </Button>
+
               <Button variant="outline" className="w-full" onClick={handleEmail}>
                 Email
               </Button>
+
               <Button variant="ghost" className="w-full" onClick={() => setShowModal(true)}>
                 Dejar mis datos
               </Button>
@@ -371,7 +358,11 @@ export default function PropertyPage() {
 
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-          <div className="bg-white max-w-md w-full p-6 rounded-2xl">
+          <div className="bg-white max-w-md w-full p-6 rounded-2xl relative">
+            <button onClick={handleCloseModal} className="absolute top-3 right-3">
+              <X className="w-5 h-5" />
+            </button>
+
             {!sent ? (
               <>
                 <input
@@ -380,18 +371,20 @@ export default function PropertyPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
+
                 <input
                   className="w-full border p-3 mb-3"
                   placeholder="Contacto"
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
                 />
+
                 <Button onClick={handleSubmitLead}>
                   {loading ? "Enviando..." : "Enviar"}
                 </Button>
               </>
             ) : (
-              <p>✅ Enviado</p>
+              <p className="text-center">✅ Enviado</p>
             )}
           </div>
         </div>
