@@ -1,6 +1,10 @@
 "use client"
 
+import { useRouter } from "next/navigation"
+
 export default function LeadCard({ lead }: any) {
+  const router = useRouter()
+
   const isNew = !lead.seen
 
   const markAsSeen = async () => {
@@ -8,6 +12,8 @@ export default function LeadCard({ lead }: any) {
       `https://casadata-api-production.up.railway.app/lead/${lead.id}/seen`,
       { method: "PATCH" }
     )
+
+    router.refresh() // 🔥 CLAVE
   }
 
   const createdAt = new Date(lead.createdAt)
