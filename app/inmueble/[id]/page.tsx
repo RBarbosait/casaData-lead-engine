@@ -41,6 +41,10 @@ export default function PropertyPage() {
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
 
+  // =========================
+  // LOAD PROPERTY
+  // =========================
+
   useEffect(() => {
     const load = async () => {
       const res = await fetch(`${API_URL}/property/${propertyId}`)
@@ -49,6 +53,10 @@ export default function PropertyPage() {
     }
     load()
   }, [propertyId])
+
+  // =========================
+  // VISIT TRACK (FIX TTL)
+  // =========================
 
   useEffect(() => {
     if (!property) return
@@ -70,7 +78,7 @@ export default function PropertyPage() {
       }, 2000)
     }
 
-    const TTL = 3000
+    const TTL = 15000 // 🔥 FIX
 
     const shouldTrack =
       !lastVisit || isNaN(lastVisit) || Date.now() - lastVisit > TTL
@@ -105,6 +113,10 @@ export default function PropertyPage() {
     }
   }, [property, propertyId])
 
+  // =========================
+  // TIME TRACK (FIX REAL)
+  // =========================
+
   useEffect(() => {
     if (!propertyId) return
 
@@ -112,10 +124,7 @@ export default function PropertyPage() {
     const start = Date.now()
 
     return () => {
-      const timeSpent = Math.max(
-        1,
-        Math.floor((Date.now() - start) / 1000)
-      )
+      const timeSpent = Date.now() - start // 🔥 FIX (ms real)
 
       const sentKey = `time_sent_${propertyId}_${sessionId}`
       if (sessionStorage.getItem(sentKey)) return
@@ -137,12 +146,16 @@ export default function PropertyPage() {
     }
   }, [propertyId])
 
+  // =========================
+  // REACH TRACK (FIX CONTACT)
+  // =========================
+
   useEffect(() => {
     if (!propertyId) return
 
     const sessionId = getSessionId()
 
-    const sections = ["hero", "details", "features", "contact"]
+    const sections = ["hero", "details", "features"] // 🔥 FIX
     const seen = new Set<string>()
 
     const onScroll = () => {
@@ -184,6 +197,27 @@ export default function PropertyPage() {
     }
   }, [propertyId])
 
+  // =========================
+  // 🔥 CONTACT TRACK (NUEVO)
+  // =========================
+
+  const trackContact = () => {
+    const sessionId = getSessionId()
+
+    fetch(`${API_URL}/track-reach`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        propertyId,
+        sessionId,
+        sections: ["contact"],
+      }),
+      keepalive: true,
+    })
+  }
+
   const getMessage = () => {
     if (!property) return ""
 
@@ -201,6 +235,8 @@ export default function PropertyPage() {
 
   const handleSubmitLead = async () => {
     if (!name || !contact) return
+
+    trackContact() // 🔥 FIX
 
     setLoading(true)
 
@@ -222,6 +258,8 @@ export default function PropertyPage() {
   }
 
   const handleWhatsApp = async () => {
+    trackContact() // 🔥 FIX
+
     await fetch(`${API_URL}/lead`, {
       method: "POST",
       headers: {
@@ -241,6 +279,8 @@ export default function PropertyPage() {
   }
 
   const handleEmail = async () => {
+    trackContact() // 🔥 FIX
+
     await fetch(`${API_URL}/lead`, {
       method: "POST",
       headers: {
@@ -277,7 +317,6 @@ export default function PropertyPage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* HEADER */}
       <header className="border-b bg-white">
         <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between">
           <Button variant="ghost" onClick={() => router.push("/inmuebles")}>
@@ -292,7 +331,6 @@ export default function PropertyPage() {
         </div>
       </header>
 
-      {/* CONTENT */}
       <div className="max-w-5xl mx-auto px-6 py-10 grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-6">
           <img
@@ -337,7 +375,6 @@ export default function PropertyPage() {
         </div>
       </div>
 
-      {/* 🔥 MODAL FIX (AGREGADO) */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white w-full max-w-md rounded-2xl p-6 relative">
