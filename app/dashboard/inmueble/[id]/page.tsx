@@ -5,9 +5,8 @@ import { getInsights } from "@/lib/analytics"
 import QRCard from "@/components/dashboard/qr-card"
 
 export default async function Page({ params }: { params: { id: string } }) {
-
   const res = await fetch(
-    `https://casadata-api-production.up.railway.app/property/${params.id}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/property/${params.id}`,
     { cache: "no-store" }
   )
 
@@ -139,12 +138,19 @@ export default async function Page({ params }: { params: { id: string } }) {
     sessionsMap[v.sessionId] = (sessionsMap[v.sessionId] || 0) + 1
   })
 
-  const usersWhoRevisit = Object.values(sessionsMap).filter(c => c > 1).length
+  const sessions = Object.values(sessionsMap)
 
-  const hotLeads = Object.entries(sessionsMap)
-    .filter(([_, count]) => count >= 3)
+  const usersWhoRevisit = sessions.filter((c) => c > 1).length
 
-  const statusColor = {
+  const intensity = sessions.length
+    ? revisitsReal / sessions.length
+    : 0
+
+  const hotLeads = Object.entries(sessionsMap).filter(
+    ([_, count]) => count >= 3
+  )
+
+  const statusColor: Record<string, string> = {
     alta_demanda: "text-green-600",
     interes_activo: "text-yellow-600",
     baja_demanda: "text-red-600",
@@ -157,7 +163,6 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <div className="p-8 space-y-8 bg-gray-50 min-h-screen max-w-5xl mx-auto">
-
       {/* HEADER */}
       <div>
         <h1 className="text-3xl font-bold">{property.title}</h1>
@@ -174,20 +179,23 @@ export default async function Page({ params }: { params: { id: string } }) {
             Índice de intención (beta)
           </p>
           <h2 className="text-4xl font-bold">{intentionScore}/100</h2>
+          <p className="text-sm text-muted-foreground mt-2">
+            Combina visitas, tiempo y reach
+          </p>
         </div>
       </div>
 
       {/* ESTADO + SCORE */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="p-6 rounded-xl border bg-white">
-          <p className="text-sm mb-2">Estado</p>
+          <p className="text-sm text-muted-foreground mb-2">Estado</p>
           <h2 className={`text-xl font-bold ${statusColor[insights.status]}`}>
             {insights.status.replace("_", " ").toUpperCase()}
           </h2>
         </div>
 
         <div className="p-6 rounded-xl border bg-white">
-          <p className="text-sm mb-2">Score</p>
+          <p className="text-sm text-muted-foreground mb-2">Score</p>
           <h2 className="text-3xl font-bold">{insights.score}/100</h2>
         </div>
       </div>
@@ -197,12 +205,21 @@ export default async function Page({ params }: { params: { id: string } }) {
         <Stat label="Visitas" value={totalVisitsReal} />
         <Stat label="Usuarios únicos" value={uniqueUsersReal} />
         <Stat label="Usuarios que vuelven" value={usersWhoRevisit} />
-        <Stat label="Revisitas" value={revisitsReal} />
+        <Stat label="Revisitas totales" value={revisitsReal} />
+      </div>
+
+      {/* INTENSIDAD */}
+      <div className="p-6 rounded-xl border bg-white">
+        <h3 className="font-semibold mb-4">Intensidad de interés</h3>
+        <p className="text-3xl font-bold">{intensityReal.toFixed(2)}</p>
+        <p className="text-sm text-muted-foreground">
+          Promedio de revisitas por usuario
+        </p>
       </div>
 
       {/* TIME + REACH */}
       <div className="grid md:grid-cols-4 gap-4">
-        <Stat label="Tiempo promedio" value={`${(avgTime/1000).toFixed(1)}s`} />
+        <Stat label="Tiempo promedio" value={`${(avgTime / 1000).toFixed(1)}s`} />
         <Stat label="Secciones vistas" value={avgReach.toFixed(1)} />
         <Stat label="Llegaron a contacto" value={`${reachContactRate.toFixed(0)}%`} />
         <Stat label="Alta intención" value={highIntentUsers.length} />
@@ -212,27 +229,144 @@ export default async function Page({ params }: { params: { id: string } }) {
       <div className="p-6 border rounded-xl bg-white space-y-4">
         <h3 className="font-semibold">Funnel</h3>
         <Bar label="Visitas" value={100} />
-        <Bar label="Exploración" value={Math.min(avgReach/4,1)*100} />
+        <Bar label="Exploración" value={Math.min((avgReach / 4) * 100, 100)} />
         <Bar label="Contacto" value={reachContactRate} />
+      </div>
+
+      {/* QR vs WEB */}
+      <div className="p-6 rounded-xl border bg-white">
+        <h3 className="font-semibold mb-6">Origen del interés</h3>
+
+        <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden mb-2">
+          <div
+            className="h-full bg-blue-500"
+            style={{ width: `${webPercent}%` }}
+          />
+        </div>
+
+        <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden mb-6">
+          <div
+            className="h-full bg-green-500"
+            style={{ width: `${qrPercent}%` }}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-6">
+          <div className="p-4 border rounded-xl text-center">
+            <p className="text-sm">Web</p>
+            <p className="text-2xl font-bold">{insights.webVisits}</p>
+            <p className="text-xs">{webPercent.toFixed(0)}%</p>
+          </div>
+
+          <div className="p-4 border rounded-xl text-center">
+            <p className="text-sm">QR</p>
+            <p className="text-2xl font-bold">{insights.qrVisits}</p>
+            <p className="text-xs">{qrPercent.toFixed(0)}%</p>
+          </div>
+        </div>
       </div>
 
       {/* REACH */}
       <div className="p-6 border rounded-xl bg-white space-y-4">
         <h3 className="font-semibold">Interacción por sección</h3>
 
-        {sortedReach.map(([section, count]) => {
-          const percent = totalSessions ? (count / totalSessions) * 100 : 0
-          return <Bar key={section} label={section} value={percent} />
-        })}
+        {sortedReach.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Aún no hay datos de reach
+          </p>
+        ) : (
+          sortedReach.map(([section, count]) => {
+            const percent = totalSessions ? (count / totalSessions) * 100 : 0
+            return <Bar key={section} label={section} value={percent} />
+          })
+        )}
       </div>
 
+      {/* HOT LEADS */}
+      <div className="p-6 rounded-xl border bg-white">
+        <h3 className="font-semibold mb-4">🔥 Alta intención detectada</h3>
+
+        {hotLeads.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No hay usuarios con comportamiento fuerte aún
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {hotLeads.map(([sessionId, count]) => {
+              const visitsForSession = visits.filter(
+                (v: any) => v.sessionId === sessionId
+              )
+              const lastVisit = visitsForSession[visitsForSession.length - 1]
+
+              return (
+                <div
+                  key={sessionId}
+                  className="p-4 border rounded-lg flex justify-between"
+                >
+                  <div>
+                    <p className="font-medium">🔥 Usuario altamente interesado</p>
+                    <p className="text-sm text-muted-foreground">
+                      {count} visitas
+                    </p>
+                  </div>
+
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(lastVisit.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* LEADS */}
+      <div className="p-6 rounded-xl border bg-white">
+        <h3 className="font-semibold mb-4">Personas interesadas</h3>
+
+        {leads.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Aún no hay contactos
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {[...leads]
+              .sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime()
+              )
+              .map((lead: any) => (
+                <div
+                  key={lead.id}
+                  className="p-4 border rounded-lg flex justify-between"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {lead.type === "whatsapp" ? "WhatsApp" : "Formulario"}
+                    </p>
+                    {lead.contact && (
+                      <p className="text-sm text-muted-foreground">
+                        {lead.contact}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(lead.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
 /* UI */
 
-function Stat({ label, value }: any) {
+function Stat({ label, value }: { label: string; value: any }) {
   return (
     <div className="p-4 border rounded-xl bg-white">
       <p className="text-sm">{label}</p>
@@ -241,7 +375,7 @@ function Stat({ label, value }: any) {
   )
 }
 
-function Bar({ label, value }: any) {
+function Bar({ label, value }: { label: string; value: number }) {
   return (
     <div>
       <div className="flex justify-between text-sm mb-1">
@@ -251,7 +385,7 @@ function Bar({ label, value }: any) {
       <div className="w-full h-3 bg-gray-200 rounded-full">
         <div
           className="h-full bg-blue-500 rounded-full"
-          style={{ width: `${value}%` }}
+          style={{ width: `${Math.max(0, Math.min(value, 100))}%` }}
         />
       </div>
     </div>
