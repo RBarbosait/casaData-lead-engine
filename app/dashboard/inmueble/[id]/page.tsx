@@ -141,20 +141,20 @@ export default async function Page({ params }: { params: { id: string } }) {
 
       const lastVisit = sessionVisits[sessionVisits.length - 1]
 
-      // 🔥 NUEVO: intentar detectar lead asociado
       const relatedLead = leads
         .filter((l: any) => l && l.createdAt)
         .sort(
           (a: any, b: any) =>
             new Date(b.createdAt).getTime() -
             new Date(a.createdAt).getTime()
-        )[0] // simple: último lead global (MVP válido)
+        )[0]
 
       return {
         sessionId,
         count,
         lastVisitAt: lastVisit?.createdAt || null,
         lastContactAt: relatedLead?.createdAt || null,
+        contact: relatedLead?.contact || null, // 🔥 FIX
         source: sessionVisits[0]?.source || "web",
       }
     })
@@ -222,7 +222,9 @@ export default async function Page({ params }: { params: { id: string } }) {
       {/* INTENSIDAD */}
       <div className="p-6 border bg-white rounded-xl">
         <h3>Intensidad</h3>
-        <p className="text-3xl font-bold">{safeNumber(intensityReal).toFixed(2)}</p>
+        <p className="text-3xl font-bold">
+          {safeNumber(intensityReal).toFixed(2)}
+        </p>
       </div>
 
       {/* BEHAVIOR */}
@@ -280,7 +282,6 @@ export default async function Page({ params }: { params: { id: string } }) {
                     Origen: {lead.source === "qr" ? "QR" : "Web"}
                   </p>
 
-                  {/* 🔥 NUEVO */}
                   {lead.lastVisitAt && (
                     <p className="text-xs text-muted-foreground">
                       Última visita:{" "}
@@ -292,6 +293,13 @@ export default async function Page({ params }: { params: { id: string } }) {
                     <p className="text-xs text-green-600">
                       Último contacto:{" "}
                       {new Date(lead.lastContactAt).toLocaleString()}
+                    </p>
+                  )}
+
+                  {/* 🔥 FIX */}
+                  {lead.contact && (
+                    <p className="text-xs text-green-700">
+                      Contacto: {lead.contact}
                     </p>
                   )}
                 </div>
@@ -331,12 +339,25 @@ export default async function Page({ params }: { params: { id: string } }) {
                 >
                   <div>
                     <p className="font-medium">
-                      {lead.type === "whatsapp" ? "WhatsApp" : "Formulario"}
+                      {lead.type === "whatsapp"
+                        ? "WhatsApp"
+                        : "Formulario"}
                     </p>
+
+                    {/* 🔥 FIX */}
+                    {lead.name && (
+                      <p className="text-sm font-medium">
+                        {lead.name}
+                      </p>
+                    )}
 
                     {lead.contact && (
                       <p className="text-sm text-muted-foreground">
-                        {lead.contact}
+                        {lead.contact.length > 6
+                          ? lead.contact.slice(0, 3) +
+                            "***" +
+                            lead.contact.slice(-2)
+                          : lead.contact}
                       </p>
                     )}
                   </div>
@@ -358,10 +379,10 @@ function Stat({ label, value }: any) {
     value === null || value === undefined
       ? 0
       : typeof value === "number"
-        ? Number.isFinite(value)
-          ? value
-          : 0
-        : value
+      ? Number.isFinite(value)
+        ? value
+        : 0
+      : value
 
   return (
     <div className="p-4 border bg-white rounded-xl">
