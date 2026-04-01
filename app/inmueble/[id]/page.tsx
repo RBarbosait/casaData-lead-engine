@@ -380,6 +380,20 @@ export default function PropertyPage() {
                 {property.title}
               </h1>
 
+              {priceFormatted && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <p className="text-3xl md:text-4xl font-bold text-gray-900">
+                    ${priceFormatted}
+                  </p>
+
+                  {property.operationType && (
+                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                      {property.operationType}
+                    </span>
+                  )}
+                </div>
+              )}
+
               <div className="flex items-start gap-2 text-gray-600">
                 <MapPin className="w-4 h-4 mt-1 shrink-0" />
                 <p className="text-sm md:text-base">
@@ -448,13 +462,15 @@ export default function PropertyPage() {
                     return (
                       <div
                         key={fact.label}
-                        className="rounded-xl border bg-white p-4 shadow-sm"
+                        className="rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition"
                       >
                         <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
                           <Icon className="w-4 h-4" />
                           <span>{fact.label}</span>
                         </div>
-                        <p className="font-medium text-gray-900">{fact.value}</p>
+                        <p className="font-medium text-gray-900">
+                          {fact.value}
+                        </p>
                       </div>
                     )
                   })}
@@ -536,7 +552,7 @@ export default function PropertyPage() {
 
                 <CardContent className="space-y-4">
                   {property.description ? (
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-line text-[15px]">
                       {property.description}
                     </p>
                   ) : (
@@ -650,7 +666,7 @@ export default function PropertyPage() {
                 {property.agentPhone && (
                   <Button
                     onClick={handleWhatsApp}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                    className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-base font-medium"
                   >
                     <MessageCircle className="w-4 h-4 mr-2" />
                     WhatsApp
@@ -659,9 +675,10 @@ export default function PropertyPage() {
 
                 {property.agentPhone && (
                   <Button
-                    onClick={() =>
-                      (window.location.href = `tel:${property.agentPhone}`)
-                    }
+                    onClick={() => {
+                      const phone = String(property.agentPhone).replace(/\D/g, "")
+                      window.location.href = `tel:${phone}`
+                    }}
                     variant="outline"
                     className="w-full"
                   >
