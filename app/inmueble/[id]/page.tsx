@@ -55,7 +55,7 @@ export default function PropertyPage() {
   }, [propertyId])
 
   // =========================
-  // VISIT TRACK (FIX TTL)
+  // VISIT TRACK
   // =========================
 
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function PropertyPage() {
       }, 2000)
     }
 
-    const TTL = 15000 // 🔥 FIX
+    const TTL = 15000
 
     const shouldTrack =
       !lastVisit || isNaN(lastVisit) || Date.now() - lastVisit > TTL
@@ -123,13 +123,8 @@ export default function PropertyPage() {
     const sessionId = getSessionId()
     const start = Date.now()
 
-    return () => {
-      const timeSpent = Date.now() - start // 🔥 FIX (ms real)
-
-      const sentKey = `time_sent_${propertyId}_${sessionId}`
-      if (sessionStorage.getItem(sentKey)) return
-
-      sessionStorage.setItem(sentKey, "1")
+    const sendTime = () => {
+      const timeSpent = Math.max(1000, Date.now() - start)
 
       fetch(`${API_URL}/track-time`, {
         method: "POST",
@@ -144,10 +139,17 @@ export default function PropertyPage() {
         keepalive: true,
       })
     }
+
+    window.addEventListener("beforeunload", sendTime)
+
+    return () => {
+      sendTime()
+      window.removeEventListener("beforeunload", sendTime)
+    }
   }, [propertyId])
 
   // =========================
-  // REACH TRACK (FIX CONTACT)
+  // REACH TRACK (FIX REAL)
   // =========================
 
   useEffect(() => {
@@ -155,33 +157,12 @@ export default function PropertyPage() {
 
     const sessionId = getSessionId()
 
-    const sections = ["hero", "details", "features"] // 🔥 FIX
+    const sections = ["hero", "details", "features", "contact"] // 🔥 IMPORTANTE
     const seen = new Set<string>()
 
-    const onScroll = () => {
-      sections.forEach((id) => {
-        const el = document.getElementById(id)
-        if (!el) return
+    let timeout: any
 
-        const rect = el.getBoundingClientRect()
-
-        if (rect.top < window.innerHeight * 0.7) {
-          seen.add(id)
-        }
-      })
-    }
-
-    onScroll()
-    window.addEventListener("scroll", onScroll, { passive: true })
-
-    return () => {
-      window.removeEventListener("scroll", onScroll)
-
-      const sentKey = `reach_sent_${propertyId}_${sessionId}`
-      if (sessionStorage.getItem(sentKey)) return
-
-      sessionStorage.setItem(sentKey, "1")
-
+    const send = () => {
       fetch(`${API_URL}/track-reach`, {
         method: "POST",
         headers: {
@@ -195,10 +176,34 @@ export default function PropertyPage() {
         keepalive: true,
       })
     }
+
+    const onScroll = () => {
+      sections.forEach((id) => {
+        const el = document.getElementById(id)
+        if (!el) return
+
+        const rect = el.getBoundingClientRect()
+
+        if (rect.top < window.innerHeight * 0.7) {
+          seen.add(id)
+        }
+      })
+
+      clearTimeout(timeout)
+      timeout = setTimeout(send, 1000)
+    }
+
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      send()
+    }
   }, [propertyId])
 
   // =========================
-  // 🔥 CONTACT TRACK (NUEVO)
+  // CONTACT TRACK
   // =========================
 
   const trackContact = () => {
@@ -236,7 +241,7 @@ export default function PropertyPage() {
   const handleSubmitLead = async () => {
     if (!name || !contact) return
 
-    trackContact() // 🔥 FIX
+    trackContact()
 
     setLoading(true)
 
@@ -258,7 +263,7 @@ export default function PropertyPage() {
   }
 
   const handleWhatsApp = async () => {
-    trackContact() // 🔥 FIX
+    trackContact()
 
     await fetch(`${API_URL}/lead`, {
       method: "POST",
@@ -279,7 +284,7 @@ export default function PropertyPage() {
   }
 
   const handleEmail = async () => {
-    trackContact() // 🔥 FIX
+    trackContact()
 
     await fetch(`${API_URL}/lead`, {
       method: "POST",
