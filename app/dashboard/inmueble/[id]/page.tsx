@@ -162,13 +162,15 @@ sortedByTime.forEach((v: any) => {
 
       const lastVisit = sessionVisits[sessionVisits.length - 1]
 
-      const relatedLead = leads
-        .filter((l: any) => l && l.createdAt)
-        .sort(
-          (a: any, b: any) =>
-            new Date(b.createdAt).getTime() -
-            new Date(a.createdAt).getTime()
-        )[0]
+      const relatedLead =
+  leads.find((l: any) => l.sessionId === sessionId) ||
+  leads
+    .filter((l: any) => l && l.createdAt)
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime()
+    )[0]
 
       return {
         sessionId,
