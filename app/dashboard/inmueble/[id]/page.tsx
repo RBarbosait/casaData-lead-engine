@@ -4,12 +4,7 @@ export const dynamic = "force-dynamic"
 import LeadCard from "@/components/dashboard/lead-card"
 import { getInsights } from "@/lib/analytics"
 import QRCard from "@/components/dashboard/qr-card"
-async function markAsSeen(id: string) {
-  await fetch(
-    `https://casadata-api-production.up.railway.app/lead/${id}/seen`,
-    { method: "PATCH" }
-  )
-}
+
 export default async function Page({ params }: { params: { id: string } }) {
   const res = await fetch(
     `https://casadata-api-production.up.railway.app/property/${params.id}?t=${Date.now()}`,
