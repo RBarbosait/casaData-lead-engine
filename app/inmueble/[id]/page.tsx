@@ -199,6 +199,7 @@ export default function PropertyPage() {
         type: "form",
         name,
         contact,
+        sessionId: getSessionId(),
       }),
     })
 
@@ -215,6 +216,7 @@ export default function PropertyPage() {
       body: JSON.stringify({
         propertyId,
         type: "whatsapp",
+        sessionId: getSessionId(),
       }),
     })
 
@@ -230,6 +232,7 @@ export default function PropertyPage() {
       body: JSON.stringify({
         propertyId,
         type: "form",
+        sessionId: getSessionId(),
       }),
     })
 
