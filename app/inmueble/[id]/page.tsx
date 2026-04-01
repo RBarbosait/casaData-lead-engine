@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,7 +11,7 @@ export const runtime = "edge"
 const API_URL = "https://casadata-api-production.up.railway.app"
 
 // =========================
-// 🔥 SEND SAFE (NO PÉRDIDA DE EVENTOS)
+// SEND SAFE
 // =========================
 function sendData(url: string, data: any) {
   const payload = JSON.stringify(data)
@@ -29,9 +29,6 @@ function sendData(url: string, data: any) {
   }
 }
 
-// =========================
-// SESSION
-// =========================
 function getSessionId() {
   if (typeof window === "undefined") return "server"
 
@@ -57,27 +54,19 @@ export default function PropertyPage() {
   const [property, setProperty] = useState<any>(null)
   const [copied, setCopied] = useState(false)
   const [showModal, setShowModal] = useState(false)
-  const [dontShowAgain, setDontShowAgain] = useState(false)
   const [name, setName] = useState("")
   const [contact, setContact] = useState("")
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
-
-  // 🔥 refs para evitar duplicados
-  const timeSent = useRef(false)
-  const reachSent = useRef(false)
 
   // =========================
   // LOAD PROPERTY
   // =========================
 
   useEffect(() => {
-    const load = async () => {
-      const res = await fetch(`${API_URL}/property/${propertyId}`)
-      const data = await res.json()
-      setProperty(data)
-    }
-    load()
+    fetch(`${API_URL}/property/${propertyId}`)
+      .then((r) => r.json())
+      .then(setProperty)
   }, [propertyId])
 
   // =========================
@@ -88,13 +77,10 @@ export default function PropertyPage() {
     if (!property) return
 
     const sessionId = getSessionId()
-
     const key = `last_visit_${propertyId}_${sessionId}`
     const lastVisit = Number(localStorage.getItem(key) || 0)
 
-    const TTL = 15000
-
-    if (!lastVisit || Date.now() - lastVisit > TTL) {
+    if (!lastVisit || Date.now() - lastVisit > 15000) {
       localStorage.setItem(key, String(Date.now()))
 
       sendData(`${API_URL}/track`, {
@@ -105,48 +91,38 @@ export default function PropertyPage() {
       })
     }
 
-    // modal delay
-    const dismissed = localStorage.getItem(`modal_dismissed_${propertyId}`)
-
-    if (!dismissed) {
-      const timer = setTimeout(() => setShowModal(true), 1500)
-      return () => clearTimeout(timer)
-    }
+    setTimeout(() => setShowModal(true), 1500)
   }, [property, propertyId])
 
   // =========================
-  // TIME TRACK
+  // 🔥 TIME TRACK (FIX REAL)
   // =========================
 
   useEffect(() => {
     if (!propertyId) return
 
     const sessionId = getSessionId()
-    const start = Date.now()
+    let last = Date.now()
 
-    const sendTime = () => {
-      if (timeSent.current) return
-      timeSent.current = true
+    const interval = setInterval(() => {
+      const now = Date.now()
+      const delta = now - last
+      last = now
 
-      const timeSpent = Math.max(1000, Date.now() - start)
+      if (delta < 500) return
 
       sendData(`${API_URL}/track-time`, {
         propertyId,
         sessionId,
-        timeSpent,
+        timeSpent: delta,
       })
-    }
+    }, 5000)
 
-    window.addEventListener("beforeunload", sendTime)
-
-    return () => {
-      sendTime()
-      window.removeEventListener("beforeunload", sendTime)
-    }
+    return () => clearInterval(interval)
   }, [propertyId])
 
   // =========================
-  // REACH TRACK
+  // 🔥 REACH TRACK (FIX REAL)
   // =========================
 
   useEffect(() => {
@@ -160,8 +136,6 @@ export default function PropertyPage() {
     let timeout: any
 
     const send = () => {
-      if (reachSent.current) return
-
       sendData(`${API_URL}/track-reach`, {
         propertyId,
         sessionId,
@@ -170,27 +144,33 @@ export default function PropertyPage() {
     }
 
     const onScroll = () => {
+      let changed = false
+
       sections.forEach((id) => {
         const el = document.getElementById(id)
         if (!el) return
 
         const rect = el.getBoundingClientRect()
+
         if (rect.top < window.innerHeight * 0.7) {
-          seen.add(id)
+          if (!seen.has(id)) {
+            seen.add(id)
+            changed = true
+          }
         }
       })
 
-      clearTimeout(timeout)
-      timeout = setTimeout(send, 800)
+      if (changed) {
+        clearTimeout(timeout)
+        timeout = setTimeout(send, 800)
+      }
     }
 
     onScroll()
     window.addEventListener("scroll", onScroll, { passive: true })
 
     return () => {
-      reachSent.current = true
       window.removeEventListener("scroll", onScroll)
-      send()
     }
   }, [propertyId])
 
@@ -199,33 +179,16 @@ export default function PropertyPage() {
   // =========================
 
   const trackContact = () => {
-    const sessionId = getSessionId()
-
     sendData(`${API_URL}/track-reach`, {
       propertyId,
-      sessionId,
+      sessionId: getSessionId(),
       sections: ["contact"],
     })
   }
 
   // =========================
-  // UI
+  // LEADS
   // =========================
-
-  const getMessage = () => {
-    if (!property) return ""
-
-    if (property.status === "nuevo")
-      return "Sé el primero en interesarte en esta propiedad"
-
-    if (property.status === "alta_demanda")
-      return "Hay varias personas interesadas. Llegá antes que el resto"
-
-    if (property.status === "baja_demanda")
-      return "Aprovechá esta oportunidad con menos competencia"
-
-    return "Esta propiedad está generando interés"
-  }
 
   const handleSubmitLead = async () => {
     if (!name || !contact) return
@@ -260,11 +223,7 @@ export default function PropertyPage() {
       }),
     })
 
-    const msg = encodeURIComponent(
-      `Hola, me interesa esta propiedad: ${property.title}`
-    )
-
-    window.open(`https://wa.me/${property.agentPhone}?text=${msg}`)
+    window.open(`https://wa.me/${property.agentPhone}`)
   }
 
   const handleEmail = async () => {
@@ -282,74 +241,33 @@ export default function PropertyPage() {
     window.location.href = `mailto:${property.agentEmail}`
   }
 
-  const handleCloseModal = () => {
-    if (dontShowAgain) {
-      localStorage.setItem(`modal_dismissed_${propertyId}`, "true")
-    }
-    setShowModal(false)
-  }
-
-  const copyLink = async () => {
-    await navigator.clipboard.writeText(window.location.href)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   if (!property) return <div className="p-10">Cargando...</div>
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between">
-          <Button variant="ghost" onClick={() => router.push("/inmuebles")}>
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Volver
-          </Button>
-
-          <Button variant="outline" onClick={copyLink}>
-            <Copy className="w-4 h-4 mr-1" />
-            {copied ? "Copiado" : "Copiar link"}
-          </Button>
-        </div>
-      </header>
-
-      <div className="max-w-5xl mx-auto px-6 py-10 grid md:grid-cols-3 gap-8">
+      <div className="max-w-5xl mx-auto p-6 grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-6">
-          <img
-            id="hero"
-            src={property.image}
-            className="w-full h-[420px] object-cover rounded-2xl"
-          />
+          <img id="hero" src={property.image} className="rounded-xl" />
 
           <div id="details">
-            <h1 className="text-3xl font-semibold">{property.title}</h1>
-            <p className="text-gray-500">{property.address}</p>
+            <h1>{property.title}</h1>
+            <p>{property.address}</p>
           </div>
 
-          <div id="features" className="text-blue-600 font-medium">
-            {getMessage()}
-          </div>
-
-          <p className="text-gray-700">{property.description}</p>
+          <div id="features">{property.description}</div>
         </div>
 
-        <div id="contact" className="space-y-4">
-          <Card className="rounded-2xl shadow-sm border border-gray-100">
+        <div id="contact">
+          <Card>
             <CardHeader>
               <CardTitle>Contacto</CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-3">
-              <Button className="w-full" onClick={handleWhatsApp}>
-                WhatsApp
-              </Button>
-
-              <Button variant="outline" className="w-full" onClick={handleEmail}>
-                Email
-              </Button>
-
-              <Button variant="ghost" className="w-full" onClick={() => setShowModal(true)}>
-                Dejar mis datos
+              <Button onClick={handleWhatsApp}>WhatsApp</Button>
+              <Button onClick={handleEmail}>Email</Button>
+              <Button onClick={() => setShowModal(true)}>
+                Dejar datos
               </Button>
             </CardContent>
           </Card>
@@ -358,33 +276,25 @@ export default function PropertyPage() {
 
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-          <div className="bg-white max-w-md w-full p-6 rounded-2xl relative">
-            <button onClick={handleCloseModal} className="absolute top-3 right-3">
-              <X className="w-5 h-5" />
-            </button>
-
+          <div className="bg-white p-6 rounded-xl">
             {!sent ? (
               <>
                 <input
-                  className="w-full border p-3 mb-3"
-                  placeholder="Nombre"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  placeholder="Nombre"
                 />
-
                 <input
-                  className="w-full border p-3 mb-3"
-                  placeholder="Contacto"
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
+                  placeholder="Contacto"
                 />
-
                 <Button onClick={handleSubmitLead}>
-                  {loading ? "Enviando..." : "Enviar"}
+                  {loading ? "..." : "Enviar"}
                 </Button>
               </>
             ) : (
-              <p className="text-center">✅ Enviado</p>
+              <p>✅ Enviado</p>
             )}
           </div>
         </div>
