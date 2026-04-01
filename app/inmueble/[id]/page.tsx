@@ -60,6 +60,13 @@ function formatPrice(value: any) {
   }).format(num)
 }
 
+function toStringArray(value: any) {
+  if (!Array.isArray(value)) return []
+  return value
+    .map((item) => String(item).trim())
+    .filter(Boolean)
+}
+
 export default function PropertyPage() {
   const params = useParams()
   const router = useRouter()
@@ -84,6 +91,14 @@ export default function PropertyPage() {
   )
 
   const priceFormatted = formatPrice(property?.price)
+
+  const highlights = toStringArray(
+    property?.highlights || property?.amenities || property?.features
+  )
+
+  const services = toStringArray(property?.services || property?.serviceList)
+
+  const extras = toStringArray(property?.extras || property?.detailsList)
 
   // =========================
   // LOAD PROPERTY
@@ -354,6 +369,11 @@ export default function PropertyPage() {
                     {property.operationType}
                   </span>
                 )}
+                {property.code && (
+                  <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                    Código {property.code}
+                  </span>
+                )}
               </div>
 
               <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900">
@@ -419,6 +439,29 @@ export default function PropertyPage() {
               </Card>
             </section>
 
+            {/* QUICK FACTS */}
+            {quickFacts.length > 0 && (
+              <section>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {quickFacts.map((fact) => {
+                    const Icon = fact.icon
+                    return (
+                      <div
+                        key={fact.label}
+                        className="rounded-xl border bg-white p-4 shadow-sm"
+                      >
+                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                          <Icon className="w-4 h-4" />
+                          <span>{fact.label}</span>
+                        </div>
+                        <p className="font-medium text-gray-900">{fact.value}</p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
             {/* DETAILS */}
             <section id="details">
               <Card className="shadow-sm">
@@ -427,28 +470,6 @@ export default function PropertyPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  {quickFacts.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {quickFacts.map((fact) => {
-                        const Icon = fact.icon
-                        return (
-                          <div
-                            key={fact.label}
-                            className="rounded-xl border bg-gray-50 p-3"
-                          >
-                            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                              <Icon className="w-4 h-4" />
-                              <span>{fact.label}</span>
-                            </div>
-                            <p className="font-medium text-gray-900">
-                              {fact.value}
-                            </p>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-
                   {property.createdAt && (
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <CalendarDays className="w-4 h-4" />
@@ -458,15 +479,59 @@ export default function PropertyPage() {
                       </span>
                     </div>
                   )}
+
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {property.floor && (
+                      <div className="rounded-xl bg-gray-50 border p-4">
+                        <p className="text-sm font-medium text-gray-900">Piso</p>
+                        <p className="text-sm text-gray-700 mt-1">
+                          {property.floor}
+                        </p>
+                      </div>
+                    )}
+
+                    {property.expenses && (
+                      <div className="rounded-xl bg-gray-50 border p-4">
+                        <p className="text-sm font-medium text-gray-900">
+                          Gastos comunes
+                        </p>
+                        <p className="text-sm text-gray-700 mt-1">
+                          ${property.expenses}
+                        </p>
+                      </div>
+                    )}
+
+                    {property.parking && (
+                      <div className="rounded-xl bg-gray-50 border p-4">
+                        <p className="text-sm font-medium text-gray-900">
+                          Garage
+                        </p>
+                        <p className="text-sm text-gray-700 mt-1">
+                          {property.parking}
+                        </p>
+                      </div>
+                    )}
+
+                    {property.orientation && (
+                      <div className="rounded-xl bg-gray-50 border p-4">
+                        <p className="text-sm font-medium text-gray-900">
+                          Orientación
+                        </p>
+                        <p className="text-sm text-gray-700 mt-1">
+                          {property.orientation}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </section>
 
-            {/* FEATURES / DESCRIPTION */}
+            {/* DESCRIPTION */}
             <section id="features">
               <Card className="shadow-sm">
                 <CardHeader>
-                  <CardTitle>Lo mejor de esta propiedad</CardTitle>
+                  <CardTitle>Descripción</CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
@@ -503,6 +568,75 @@ export default function PropertyPage() {
                 </CardContent>
               </Card>
             </section>
+
+            {/* HIGHLIGHTS */}
+            {highlights.length > 0 && (
+              <section>
+                <Card className="shadow-sm">
+                  <CardHeader>
+                    <CardTitle>Características destacadas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {highlights.map((item) => (
+                        <span
+                          key={item}
+                          className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
+            {/* SERVICES */}
+            {services.length > 0 && (
+              <section>
+                <Card className="shadow-sm">
+                  <CardHeader>
+                    <CardTitle>Amenities / servicios</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {services.map((item) => (
+                        <div
+                          key={item}
+                          className="rounded-xl border bg-white px-3 py-2 text-sm text-gray-700"
+                        >
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
+            {/* EXTRAS */}
+            {extras.length > 0 && (
+              <section>
+                <Card className="shadow-sm">
+                  <CardHeader>
+                    <CardTitle>Información adicional</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-2">
+                      {extras.map((item) => (
+                        <div
+                          key={item}
+                          className="rounded-xl border bg-gray-50 px-3 py-2 text-sm text-gray-700"
+                        >
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
           </div>
 
           {/* RIGHT / CONTACT */}
@@ -569,6 +703,40 @@ export default function PropertyPage() {
                     acepta cualquiera de los dos.
                   </p>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle>Resumen de la ficha</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm text-gray-700">
+                <div className="flex justify-between gap-4">
+                  <span className="text-gray-500">Título</span>
+                  <span className="text-right font-medium">{property.title}</span>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <span className="text-gray-500">Ubicación</span>
+                  <span className="text-right font-medium">
+                    {property.address || property.location}
+                  </span>
+                </div>
+                {priceFormatted && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-gray-500">Precio</span>
+                    <span className="text-right font-medium">
+                      ${priceFormatted}
+                    </span>
+                  </div>
+                )}
+                {property.operationType && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-gray-500">Operación</span>
+                    <span className="text-right font-medium">
+                      {property.operationType}
+                    </span>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
