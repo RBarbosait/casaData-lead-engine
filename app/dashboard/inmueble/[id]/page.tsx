@@ -3,7 +3,12 @@ export const dynamic = "force-dynamic"
 
 import { getInsights } from "@/lib/analytics"
 import QRCard from "@/components/dashboard/qr-card"
-
+async function markAsSeen(id: string) {
+  await fetch(
+    `https://casadata-api-production.up.railway.app/lead/${id}/seen`,
+    { method: "PATCH" }
+  )
+}
 export default async function Page({ params }: { params: { id: string } }) {
   const res = await fetch(
     `https://casadata-api-production.up.railway.app/property/${params.id}?t=${Date.now()}`,
@@ -359,15 +364,18 @@ sortedByTime.forEach((v: any) => {
   const createdAt = new Date(lead.createdAt)
   const diff = Date.now() - createdAt.getTime()
 
-  const isNew = diff < 10 * 60 * 1000 // 🔥 10 min
+  const isNew = !lead.seen
 
   return (
     <div
-      key={lead.id || i}
-      className={`p-4 border rounded-lg flex justify-between ${
-        isNew ? "bg-green-50 border-green-300" : "bg-white"
-      }`}
-    >
+  key={lead.id || i}
+  onClick={() => markAsSeen(lead.id)}
+  className={`p-4 border rounded-lg flex justify-between cursor-pointer transition ${
+    isNew
+      ? "bg-green-50 border-green-300"
+      : "bg-white hover:bg-gray-50"
+  }`}
+>
       <div>
         {/* HEADER */}
         <div className="flex items-center gap-2">
