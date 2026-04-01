@@ -52,6 +52,19 @@ export default async function Page({ params }: { params: { id: string } }) {
     totalSessions ? (usersReachedContact / totalSessions) * 100 : 0
   )
 
+  const reachCounts: Record<string, number> = {}
+
+  sessionAnalytics.forEach((s: any) => {
+    const sections = (s?.reach as string[] | null) || []
+    sections.forEach((section) => {
+      reachCounts[section] = (reachCounts[section] || 0) + 1
+    })
+  })
+
+  const sortedReach = Object.entries(reachCounts).sort(
+    (a, b) => b[1] - a[1]
+  )
+
   const highIntentUsers = sessionAnalytics.filter((s: any) => {
     const time = s?.timeSpent || 0
     const reach = (s?.reach as string[] | null) || []
@@ -124,6 +137,36 @@ export default async function Page({ params }: { params: { id: string } }) {
     (c) => c > 1
   ).length
 
+  const hotLeads = Object.entries(sessionsMap)
+    .filter(([_, count]) => count >= 3)
+    .map(([sessionId, count]) => {
+      const sessionVisits = visits
+        .filter((v: any) => v.sessionId === sessionId)
+        .sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() -
+            new Date(b.createdAt).getTime()
+        )
+
+      const lastVisit = sessionVisits[sessionVisits.length - 1]
+
+      const relatedLead = leads
+        .filter((l: any) => l && l.createdAt)
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime()
+        )[0]
+
+      return {
+        sessionId,
+        count,
+        lastVisitAt: lastVisit?.createdAt || null,
+        lastContactAt: relatedLead?.createdAt || null,
+        source: sessionVisits[0]?.source || "web",
+      }
+    })
+
   // 🔥 STATUS SAFE
   const statusColor: Record<string, string> = {
     alta_demanda: "text-green-600",
@@ -142,7 +185,6 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <div className="p-8 space-y-8 bg-gray-50 min-h-screen max-w-5xl mx-auto">
-
       {/* HEADER */}
       <div>
         <h1 className="text-3xl font-bold">{property.title}</h1>
@@ -204,9 +246,76 @@ export default async function Page({ params }: { params: { id: string } }) {
       </div>
 
       {/* ORIGEN */}
-      <div className="p-6 border bg-white rounded-xl">
+      <div className="p-6 border bg-white rounded-xl space-y-4">
         <Bar label="Web" value={webPercent} />
         <Bar label="QR" value={qrPercent} />
+      </div>
+
+      {/* INTERACCIÓN POR SECCIÓN */}
+      <div className="p-6 border bg-white rounded-xl space-y-4">
+        <h3 className="font-semibold">Interacción por sección</h3>
+
+        {sortedReach.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Aún no hay datos de reach
+          </p>
+        ) : (
+          sortedReach.map(([section, count]) => {
+            const percent = totalSessions ? (count / totalSessions) * 100 : 0
+            return <Bar key={section} label={section} value={percent} />
+          })
+        )}
+      </div>
+
+      {/* HOT LEADS */}
+      <div className="p-6 border bg-white rounded-xl">
+        <h3 className="font-semibold mb-4">🔥 Alta intención detectada</h3>
+
+        {hotLeads.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No hay usuarios con comportamiento fuerte aún
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {hotLeads.map((lead) => (
+              <div
+                key={lead.sessionId}
+                className="p-4 border rounded-lg flex justify-between"
+              >
+                <div>
+                  <p className="font-medium">🔥 Usuario altamente interesado</p>
+                  <p className="text-sm text-muted-foreground">
+                    {lead.count} visitas
+                  </p>
+
+                  <p className="text-xs text-muted-foreground">
+                    Origen: {lead.source === "qr" ? "QR" : "Web"}
+                  </p>
+
+                  {lead.lastVisitAt && (
+                    <p className="text-xs text-muted-foreground">
+                      Última visita:{" "}
+                      {new Date(lead.lastVisitAt).toLocaleString()}
+                    </p>
+                  )}
+
+                  {lead.lastContactAt && (
+                    <p className="text-xs text-green-600">
+                      Último contacto:{" "}
+                      {new Date(lead.lastContactAt).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+
+                <div className="text-xs text-muted-foreground">
+                  {lead.lastVisitAt
+                    ? new Date(lead.lastVisitAt).toLocaleDateString()
+                    : "-"}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* LEADS */}
@@ -233,9 +342,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                 >
                   <div>
                     <p className="font-medium">
-                      {lead.type === "whatsapp"
-                        ? "WhatsApp"
-                        : "Formulario"}
+                      {lead.type === "whatsapp" ? "WhatsApp" : "Formulario"}
                     </p>
 
                     {lead.contact && (
@@ -253,7 +360,6 @@ export default async function Page({ params }: { params: { id: string } }) {
           </div>
         )}
       </div>
-
     </div>
   )
 }
@@ -282,7 +388,9 @@ function Bar({ label, value }: any) {
 
   return (
     <div className="mb-2">
-      <p>{label} {safe.toFixed(0)}%</p>
+      <p>
+        {label} {safe.toFixed(0)}%
+      </p>
       <div className="h-2 bg-gray-200 rounded">
         <div
           className="h-full bg-blue-500"
