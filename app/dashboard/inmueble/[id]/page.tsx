@@ -6,9 +6,10 @@ import QRCard from "@/components/dashboard/qr-card"
 
 export default async function Page({ params }: { params: { id: string } }) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/property/${params.id}`,
-    { cache: "no-store" }
-  )
+  `https://casadata-api-production.up.railway.app/property/${params.id}`,
+  { cache: "no-store" }
+)
+  
 
   if (!res.ok) {
     throw new Error("Error fetching property")
