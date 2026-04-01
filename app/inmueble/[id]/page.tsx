@@ -356,7 +356,7 @@ export default function PropertyPage() {
         </div>
       </div>
 
-      <main className="max-w-6xl mx-auto px-4 py-6 md:py-8">
+      <main className="max-w-6xl mx-auto px-4 py-6 md:py-8 pb-24">
         <div className="grid lg:grid-cols-[minmax(0,1.55fr)_380px] gap-8 items-start">
           {/* LEFT */}
           <div className="space-y-6">
@@ -759,6 +759,37 @@ export default function PropertyPage() {
           </div>
         </div>
       </main>
+
+      {/* MOBILE STICKY BAR */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-white shadow-lg p-3 flex gap-2 lg:hidden">
+        {property?.agentPhone && (
+          <button
+            onClick={handleWhatsApp}
+            className="flex-1 rounded-xl bg-green-600 text-white py-3 text-sm font-medium"
+          >
+            WhatsApp
+          </button>
+        )}
+
+        {property?.agentPhone && (
+          <button
+            onClick={() => {
+              const phone = String(property.agentPhone).replace(/\D/g, "")
+              window.location.href = `tel:${phone}`
+            }}
+            className="flex-1 rounded-xl border py-3 text-sm font-medium"
+          >
+            Llamar
+          </button>
+        )}
+
+        <button
+          onClick={() => setShowModal(true)}
+          className="flex-1 rounded-xl bg-slate-900 text-white py-3 text-sm font-medium"
+        >
+          Contactar
+        </button>
+      </div>
 
       {/* MODAL */}
       {showModal && (
