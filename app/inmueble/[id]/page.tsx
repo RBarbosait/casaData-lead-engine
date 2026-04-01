@@ -1,10 +1,22 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Copy, Phone, X } from "lucide-react"
+import {
+  ArrowLeft,
+  Bath,
+  BedDouble,
+  CalendarDays,
+  Copy,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Ruler,
+  X,
+} from "lucide-react"
 
 export const runtime = "edge"
 
@@ -39,6 +51,15 @@ function getSessionId() {
   return session
 }
 
+function formatPrice(value: any) {
+  const num = Number(value)
+  if (!Number.isFinite(num) || num <= 0) return null
+
+  return new Intl.NumberFormat("es-UY", {
+    maximumFractionDigits: 0,
+  }).format(num)
+}
+
 export default function PropertyPage() {
   const params = useParams()
   const router = useRouter()
@@ -51,21 +72,37 @@ export default function PropertyPage() {
   const [contact, setContact] = useState("")
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [selectedImage, setSelectedImage] = useState("")
+
+  const gallery: string[] = Array.from(
+    new Set(
+      [
+        property?.image,
+        ...(Array.isArray(property?.images) ? property.images : []),
+      ].filter(Boolean)
+    )
+  )
+
+  const priceFormatted = formatPrice(property?.price)
 
   // =========================
   // LOAD PROPERTY
   // =========================
-
   useEffect(() => {
     fetch(`${API_URL}/property/${propertyId}`)
       .then((r) => r.json())
       .then(setProperty)
   }, [propertyId])
 
+  useEffect(() => {
+    if (gallery.length > 0) {
+      setSelectedImage(gallery[0])
+    }
+  }, [propertyId, property?.image, property?.images])
+
   // =========================
   // VISIT TRACK
   // =========================
-
   useEffect(() => {
     if (!property) return
 
@@ -84,13 +121,14 @@ export default function PropertyPage() {
       })
     }
 
-    setTimeout(() => setShowModal(true), 1500)
+    const timer = window.setTimeout(() => setShowModal(true), 1500)
+
+    return () => window.clearTimeout(timer)
   }, [property, propertyId])
 
   // =========================
   // 🔥 TIME TRACK (PRO)
   // =========================
-
   useEffect(() => {
     if (!propertyId) return
 
@@ -98,7 +136,7 @@ export default function PropertyPage() {
     let last = Date.now()
 
     const interval = setInterval(() => {
-      if (document.hidden) return // 🔥 evita inflar métricas
+      if (document.hidden) return
 
       const now = Date.now()
       const delta = now - last
@@ -119,7 +157,6 @@ export default function PropertyPage() {
   // =========================
   // 🔥 REACH TRACK
   // =========================
-
   useEffect(() => {
     if (!propertyId) return
 
@@ -172,7 +209,6 @@ export default function PropertyPage() {
   // =========================
   // CONTACT TRACK
   // =========================
-
   const trackContact = () => {
     sendData(`${API_URL}/track-reach`, {
       propertyId,
@@ -184,9 +220,11 @@ export default function PropertyPage() {
   // =========================
   // LEADS
   // =========================
-
   const handleSubmitLead = async () => {
-    if (!name || !contact) return
+    const safeName = name.trim()
+    const safeContact = contact.trim()
+
+    if (!safeName || !safeContact) return
 
     trackContact()
     setLoading(true)
@@ -197,8 +235,8 @@ export default function PropertyPage() {
       body: JSON.stringify({
         propertyId,
         type: "form",
-        name,
-        contact,
+        name: safeName,
+        contact: safeContact, // email o celular
         sessionId: getSessionId(),
       }),
     })
@@ -208,9 +246,14 @@ export default function PropertyPage() {
   }
 
   const handleWhatsApp = async () => {
+    if (!property?.agentPhone) return
+
+    const phone = String(property.agentPhone).replace(/\D/g, "")
+    const url = `https://wa.me/${phone}`
+
     trackContact()
 
-    await fetch(`${API_URL}/lead`, {
+    fetch(`${API_URL}/lead`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -218,12 +261,14 @@ export default function PropertyPage() {
         type: "whatsapp",
         sessionId: getSessionId(),
       }),
-    })
+    }).catch(() => {})
 
-    window.open(`https://wa.me/${property.agentPhone}`)
+    window.open(url, "_blank", "noopener,noreferrer")
   }
 
   const handleEmail = async () => {
+    if (!property?.agentEmail) return
+
     trackContact()
 
     await fetch(`${API_URL}/lead`, {
@@ -239,75 +284,359 @@ export default function PropertyPage() {
     window.location.href = `mailto:${property.agentEmail}`
   }
 
+  const copyPropertyLink = async () => {
+    if (typeof window === "undefined") return
+    await navigator.clipboard.writeText(window.location.href)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1600)
+  }
+
   // =========================
   // UI
   // =========================
-
   if (!property) return <div className="p-10">Cargando...</div>
+
+  const quickFacts: Array<{
+    label: string
+    value: string
+    icon: any
+  }> = [
+    property.operationType
+      ? { label: "Operación", value: property.operationType, icon: CalendarDays }
+      : null,
+    priceFormatted
+      ? { label: "Precio", value: `$${priceFormatted}`, icon: CalendarDays }
+      : null,
+    property.bedrooms
+      ? { label: "Dormitorios", value: String(property.bedrooms), icon: BedDouble }
+      : null,
+    property.bathrooms
+      ? { label: "Baños", value: String(property.bathrooms), icon: Bath }
+      : null,
+    property.area
+      ? { label: "Superficie", value: `${property.area} m²`, icon: Ruler }
+      : null,
+  ].filter(Boolean) as any
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto p-6 grid md:grid-cols-3 gap-8">
-        <div className="md:col-span-2 space-y-6">
-          <img id="hero" src={property.image} className="rounded-xl" />
+      {/* TOP BAR */}
+      <div className="border-b bg-white/90 backdrop-blur sticky top-0 z-20">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-black"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver
+          </button>
 
-          <div id="details">
-            <h1>{property.title}</h1>
-            <p>{property.address}</p>
-          </div>
-
-          <div id="features">{property.description}</div>
-        </div>
-
-        <div id="contact">
-          <Card>
-            <CardHeader>
-              <CardTitle>Contacto</CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-3">
-              <Button onClick={handleWhatsApp}>WhatsApp</Button>
-              <Button onClick={handleEmail}>Email</Button>
-              <Button onClick={() => setShowModal(true)}>
-                Dejar datos
-              </Button>
-            </CardContent>
-          </Card>
+          <button
+            onClick={copyPropertyLink}
+            className="inline-flex items-center gap-2 text-sm px-3 py-2 rounded-lg border bg-white hover:bg-gray-50"
+          >
+            <Copy className="w-4 h-4" />
+            {copied ? "Copiado" : "Compartir"}
+          </button>
         </div>
       </div>
 
+      <main className="max-w-6xl mx-auto px-4 py-6 md:py-8">
+        <div className="grid lg:grid-cols-[minmax(0,1.55fr)_380px] gap-8 items-start">
+          {/* LEFT */}
+          <div className="space-y-6">
+            {/* TITLE / CONTEXT */}
+            <section className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wider text-gray-500">
+                <span>Ficha del inmueble</span>
+                {property.operationType && (
+                  <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                    {property.operationType}
+                  </span>
+                )}
+              </div>
+
+              <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900">
+                {property.title}
+              </h1>
+
+              <div className="flex items-start gap-2 text-gray-600">
+                <MapPin className="w-4 h-4 mt-1 shrink-0" />
+                <p className="text-sm md:text-base">
+                  {property.address || property.location}
+                </p>
+              </div>
+            </section>
+
+            {/* HERO */}
+            <section id="hero">
+              <Card className="overflow-hidden shadow-sm">
+                <div className="relative">
+                  <img
+                    src={selectedImage || property.image}
+                    alt={property.title}
+                    className="w-full aspect-[16/11] object-cover"
+                  />
+
+                  <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+                    {property.operationType && (
+                      <span className="rounded-full bg-black/70 text-white px-3 py-1 text-xs backdrop-blur">
+                        {property.operationType}
+                      </span>
+                    )}
+
+                    {priceFormatted && (
+                      <span className="rounded-full bg-white/90 text-gray-900 px-3 py-1 text-xs font-medium">
+                        ${priceFormatted}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {gallery.length > 1 && (
+                  <div className="p-4 border-t bg-white">
+                    <div className="flex gap-3 overflow-x-auto pb-1">
+                      {gallery.map((img: string, idx: number) => (
+                        <button
+                          key={`${img}-${idx}`}
+                          onClick={() => setSelectedImage(img)}
+                          className={`shrink-0 rounded-lg overflow-hidden border-2 transition ${
+                            selectedImage === img
+                              ? "border-gray-900"
+                              : "border-transparent opacity-70 hover:opacity-100"
+                          }`}
+                        >
+                          <img
+                            src={img}
+                            alt={`${property.title} ${idx + 1}`}
+                            className="w-24 h-16 object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </Card>
+            </section>
+
+            {/* DETAILS */}
+            <section id="details">
+              <Card className="shadow-sm">
+                <CardHeader>
+                  <CardTitle>Detalles clave</CardTitle>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  {quickFacts.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {quickFacts.map((fact) => {
+                        const Icon = fact.icon
+                        return (
+                          <div
+                            key={fact.label}
+                            className="rounded-xl border bg-gray-50 p-3"
+                          >
+                            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                              <Icon className="w-4 h-4" />
+                              <span>{fact.label}</span>
+                            </div>
+                            <p className="font-medium text-gray-900">
+                              {fact.value}
+                            </p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {property.createdAt && (
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <CalendarDays className="w-4 h-4" />
+                      <span>
+                        Publicado{" "}
+                        {new Date(property.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* FEATURES / DESCRIPTION */}
+            <section id="features">
+              <Card className="shadow-sm">
+                <CardHeader>
+                  <CardTitle>Lo mejor de esta propiedad</CardTitle>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  {property.description ? (
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                      {property.description}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      Aún no hay descripción cargada.
+                    </p>
+                  )}
+
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div className="rounded-xl bg-green-50 border border-green-100 p-4">
+                      <p className="text-sm font-medium text-green-900">
+                        Vista rápida
+                      </p>
+                      <p className="text-sm text-green-800 mt-1">
+                        La información clave está arriba; esta sección ayuda a
+                        vender mejor la intención.
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl bg-slate-50 border p-4">
+                      <p className="text-sm font-medium text-slate-900">
+                        Siguiente paso
+                      </p>
+                      <p className="text-sm text-slate-700 mt-1">
+                        Abrí contacto, dejá datos o continuá navegando.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+          </div>
+
+          {/* RIGHT / CONTACT */}
+          <div id="contact" className="lg:sticky lg:top-24 space-y-4">
+            <Card className="shadow-sm border-2 border-slate-200">
+              <CardHeader>
+                <CardTitle>Contacto</CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-3">
+                {property.agentPhone && (
+                  <Button
+                    onClick={handleWhatsApp}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    WhatsApp
+                  </Button>
+                )}
+
+                {property.agentPhone && (
+                  <Button
+                    onClick={() =>
+                      (window.location.href = `tel:${property.agentPhone}`)
+                    }
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Phone className="w-4 h-4 mr-2" />
+                    Llamar
+                  </Button>
+                )}
+
+                {property.agentEmail && (
+                  <Button
+                    onClick={handleEmail}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Email
+                  </Button>
+                )}
+
+                <Button
+                  onClick={() => setShowModal(true)}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white"
+                >
+                  Dejar datos
+                </Button>
+
+                <button
+                  onClick={copyPropertyLink}
+                  className="w-full text-sm text-gray-600 hover:text-black inline-flex items-center justify-center gap-2 py-2"
+                >
+                  <Copy className="w-4 h-4" />
+                  {copied ? "Enlace copiado" : "Copiar enlace"}
+                </button>
+
+                <div className="rounded-xl bg-slate-50 border p-4 text-sm text-slate-700">
+                  <p className="font-medium text-slate-900">Respuesta rápida</p>
+                  <p className="mt-1">
+                    Dejá tu email o celular y te contactamos. El mismo input
+                    acepta cualquiera de los dos.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </main>
+
+      {/* MODAL */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-          <div className="bg-white p-6 rounded-xl relative">
+        <div
+          className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 p-3"
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="bg-white w-full max-w-md rounded-2xl p-6 relative shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-3 right-3"
+              className="absolute top-3 right-3 text-gray-500 hover:text-black"
             >
               <X className="w-5 h-5" />
             </button>
 
             {!sent ? (
-              <>
+              <div className="space-y-4">
+                <div>
+                  <h2 className="text-xl font-semibold">Dejá tus datos</h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Podés dejar tu email o tu celular en el mismo campo.
+                  </p>
+                </div>
+
                 <input
-                  className="w-full border p-3 mb-3"
+                  className="w-full border rounded-xl p-3"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Nombre"
                 />
 
                 <input
-                  className="w-full border p-3 mb-3"
+                  className="w-full border rounded-xl p-3"
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
-                  placeholder="Contacto"
+                  placeholder="Email o celular"
                 />
 
-                <Button onClick={handleSubmitLead}>
+                <Button
+                  onClick={handleSubmitLead}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white"
+                >
                   {loading ? "Enviando..." : "Enviar"}
                 </Button>
-              </>
+              </div>
             ) : (
-              <p className="text-center">✅ Enviado</p>
+              <div className="py-8 text-center space-y-3">
+                <p className="text-2xl">✅</p>
+                <h2 className="text-xl font-semibold">Enviado</h2>
+                <p className="text-sm text-gray-500">
+                  Ya recibimos tus datos.
+                </p>
+                <Button
+                  onClick={() => setShowModal(false)}
+                  variant="outline"
+                  className="mt-2"
+                >
+                  Cerrar
+                </Button>
+              </div>
             )}
           </div>
         </div>
