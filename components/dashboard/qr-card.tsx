@@ -13,7 +13,7 @@ export default function QRCard({ propertyId, title, address }: Props) {
     process.env.NEXT_PUBLIC_BASE_URL ||
     (typeof window !== "undefined"
       ? window.location.origin
-      : "https://d238f366.casadata-lead-engine.pages.dev");
+      : "https://casadata-lead-engine.pages.dev");
 
   const url = `${baseUrl}/inmueble/${propertyId}?src=qr`;
 
