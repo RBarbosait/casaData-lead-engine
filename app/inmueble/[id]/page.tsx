@@ -10,6 +10,23 @@ export const runtime = "edge"
 
 const API_URL = "https://casadata-api-production.up.railway.app"
 
+// 🔥 FIX GLOBAL (CLAVE)
+function sendData(url: string, data: any) {
+  const payload = JSON.stringify(data)
+
+  if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+    const blob = new Blob([payload], { type: "application/json" })
+    navigator.sendBeacon(url, blob)
+  } else {
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: true,
+    })
+  }
+}
+
 function getSessionId() {
   if (typeof window === "undefined") return "server"
 
@@ -86,17 +103,11 @@ export default function PropertyPage() {
     if (shouldTrack && allowTracking) {
       localStorage.setItem(key, String(Date.now()))
 
-      fetch(`${API_URL}/track`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          propertyId,
-          source:
-            new URLSearchParams(window.location.search).get("src") || "web",
-          sessionId,
-        }),
+      sendData(`${API_URL}/track`, {
+        propertyId,
+        source:
+          new URLSearchParams(window.location.search).get("src") || "web",
+        sessionId,
       })
     }
 
@@ -114,7 +125,7 @@ export default function PropertyPage() {
   }, [property, propertyId])
 
   // =========================
-  // TIME TRACK (FIX REAL)
+  // TIME TRACK
   // =========================
 
   useEffect(() => {
@@ -126,17 +137,10 @@ export default function PropertyPage() {
     const sendTime = () => {
       const timeSpent = Math.max(1000, Date.now() - start)
 
-      fetch(`${API_URL}/track-time`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          propertyId,
-          sessionId,
-          timeSpent,
-        }),
-        keepalive: true,
+      sendData(`${API_URL}/track-time`, {
+        propertyId,
+        sessionId,
+        timeSpent,
       })
     }
 
@@ -149,7 +153,7 @@ export default function PropertyPage() {
   }, [propertyId])
 
   // =========================
-  // REACH TRACK (FIX REAL)
+  // REACH TRACK
   // =========================
 
   useEffect(() => {
@@ -157,23 +161,16 @@ export default function PropertyPage() {
 
     const sessionId = getSessionId()
 
-    const sections = ["hero", "details", "features", "contact"] // 🔥 IMPORTANTE
+    const sections = ["hero", "details", "features", "contact"]
     const seen = new Set<string>()
 
     let timeout: any
 
     const send = () => {
-      fetch(`${API_URL}/track-reach`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          propertyId,
-          sessionId,
-          sections: Array.from(seen),
-        }),
-        keepalive: true,
+      sendData(`${API_URL}/track-reach`, {
+        propertyId,
+        sessionId,
+        sections: Array.from(seen),
       })
     }
 
@@ -209,19 +206,16 @@ export default function PropertyPage() {
   const trackContact = () => {
     const sessionId = getSessionId()
 
-    fetch(`${API_URL}/track-reach`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        propertyId,
-        sessionId,
-        sections: ["contact"],
-      }),
-      keepalive: true,
+    sendData(`${API_URL}/track-reach`, {
+      propertyId,
+      sessionId,
+      sections: ["contact"],
     })
   }
+
+  // =========================
+  // UI LOGIC
+  // =========================
 
   const getMessage = () => {
     if (!property) return ""
@@ -242,7 +236,6 @@ export default function PropertyPage() {
     if (!name || !contact) return
 
     trackContact()
-
     setLoading(true)
 
     await fetch(`${API_URL}/lead`, {
@@ -321,7 +314,6 @@ export default function PropertyPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       <header className="border-b bg-white">
         <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between">
           <Button variant="ghost" onClick={() => router.push("/inmuebles")}>
@@ -363,15 +355,12 @@ export default function PropertyPage() {
             </CardHeader>
 
             <CardContent className="space-y-3">
-              <Button className="w-full h-11 rounded-xl" onClick={handleWhatsApp}>
-                <Phone className="w-4 h-4 mr-2" />
+              <Button className="w-full" onClick={handleWhatsApp}>
                 WhatsApp
               </Button>
-
-              <Button variant="outline" className="w-full h-11 rounded-xl" onClick={handleEmail}>
+              <Button variant="outline" className="w-full" onClick={handleEmail}>
                 Email
               </Button>
-
               <Button variant="ghost" className="w-full" onClick={() => setShowModal(true)}>
                 Dejar mis datos
               </Button>
@@ -381,54 +370,32 @@ export default function PropertyPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white w-full max-w-md rounded-2xl p-6 relative">
-
-            <button
-              onClick={handleCloseModal}
-              className="absolute top-3 right-3"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40">
+          <div className="bg-white max-w-md w-full p-6 rounded-2xl">
             {!sent ? (
               <>
-                <h2 className="text-xl font-semibold mb-2">
-                  Dejá tus datos
-                </h2>
-
-                <div className="space-y-3">
-                  <input
-                    className="w-full border p-3 rounded-lg"
-                    placeholder="Nombre"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-
-                  <input
-                    className="w-full border p-3 rounded-lg"
-                    placeholder="Contacto"
-                    value={contact}
-                    onChange={(e) => setContact(e.target.value)}
-                  />
-
-                  <Button className="w-full" onClick={handleSubmitLead}>
-                    {loading ? "Enviando..." : "Enviar"}
-                  </Button>
-                </div>
+                <input
+                  className="w-full border p-3 mb-3"
+                  placeholder="Nombre"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <input
+                  className="w-full border p-3 mb-3"
+                  placeholder="Contacto"
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                />
+                <Button onClick={handleSubmitLead}>
+                  {loading ? "Enviando..." : "Enviar"}
+                </Button>
               </>
             ) : (
-              <div className="text-center">
-                <p className="text-lg font-semibold">✅ Enviado</p>
-                <Button className="mt-4" onClick={handleCloseModal}>
-                  Cerrar
-                </Button>
-              </div>
+              <p>✅ Enviado</p>
             )}
           </div>
         </div>
       )}
-
     </div>
   )
 }
