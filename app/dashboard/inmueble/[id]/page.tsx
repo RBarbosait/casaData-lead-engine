@@ -1,6 +1,7 @@
 export const runtime = "edge"
 export const dynamic = "force-dynamic"
 
+import LeadCard from "@/components/dashboard/lead-card"
 import { getInsights } from "@/lib/analytics"
 import QRCard from "@/components/dashboard/qr-card"
 async function markAsSeen(id: string) {
@@ -342,95 +343,31 @@ sortedByTime.forEach((v: any) => {
           </div>
         )}
       </div>
-
       {/* LEADS */}
-      <div className="p-6 border bg-white rounded-xl">
-        <h3 className="font-semibold mb-4">Personas interesadas</h3>
+<div className="p-6 border bg-white rounded-xl">
+  <h3 className="font-semibold mb-4">Personas interesadas</h3>
 
-        {leads.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Aún no hay contactos
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {[...leads]
-              .filter((l) => l && l.createdAt)
-              .sort(
-                (a: any, b: any) =>
-                  new Date(b.createdAt).getTime() -
-                  new Date(a.createdAt).getTime()
-              )
-              .map((lead: any, i: number) => {
-  const createdAt = new Date(lead.createdAt)
-  const diff = Date.now() - createdAt.getTime()
-
-  const isNew = !lead.seen
-
-  return (
-    <div
-  key={lead.id || i}
-  onClick={() => markAsSeen(lead.id)}
-  className={`p-4 border rounded-lg flex justify-between cursor-pointer transition ${
-    isNew
-      ? "bg-green-50 border-green-300"
-      : "bg-white hover:bg-gray-50"
-  }`}
->
-      <div>
-        {/* HEADER */}
-        <div className="flex items-center gap-2">
-          <p className="font-medium">
-            {lead.type === "whatsapp"
-              ? "WhatsApp"
-              : "Formulario"}
-          </p>
-
-          {/* STATUS */}
-          <span
-            className={`text-xs px-2 py-1 rounded ${
-              isNew
-                ? "bg-green-200 text-green-800"
-                : "bg-gray-200 text-gray-600"
-            }`}
-          >
-            {isNew ? "Nuevo" : "Visto"}
-          </span>
-        </div>
-
-        {/* NOMBRE */}
-        {lead.name && (
-          <p className="text-sm font-medium mt-1">
-            {lead.name}
-          </p>
-        )}
-
-        {/* CONTACTO (ahora completo) */}
-        {lead.contact && (
-          <p className="text-sm text-muted-foreground">
-            {lead.contact}
-          </p>
-        )}
-
-        {/* DEBUG SESSION (opcional pero útil) */}
-        {lead.sessionId && (
-          <p className="text-xs text-gray-400">
-            session: {lead.sessionId.slice(0, 8)}...
-          </p>
-        )}
-      </div>
-
-      {/* FECHA */}
-      <div className="text-xs text-muted-foreground">
-        {createdAt.toLocaleString()}
-      </div>
+  {leads.length === 0 ? (
+    <p className="text-sm text-muted-foreground">
+      Aún no hay contactos
+    </p>
+  ) : (
+    <div className="space-y-3">
+      {[...leads]
+        .filter((l) => l && l.createdAt)
+        .sort(
+          (a: any, b: any) =>
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime()
+        )
+        .map((lead: any, i: number) => (
+          <LeadCard key={lead.id || i} lead={lead} />
+        ))}
     </div>
-  )
-              })}
-          </div>
-        )}
+  )}
+</div>
       </div>
-    </div>
-  )
+)
 }
 function Stat({ label, value }: any) {
   const displayValue =
