@@ -11,22 +11,15 @@ export const runtime = "edge"
 const API_URL = "https://casadata-api-production.up.railway.app"
 
 // =========================
-// SEND SAFE
+// 🔥 SEND SAFE (FIX REAL)
 // =========================
 function sendData(url: string, data: any) {
-  const payload = JSON.stringify(data)
-
-  if (typeof navigator !== "undefined" && navigator.sendBeacon) {
-    const blob = new Blob([payload], { type: "application/json" })
-    navigator.sendBeacon(url, blob)
-  } else {
-    fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: payload,
-      keepalive: true,
-    })
-  }
+  fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    keepalive: true,
+  })
 }
 
 function getSessionId() {
@@ -95,7 +88,7 @@ export default function PropertyPage() {
   }, [property, propertyId])
 
   // =========================
-  // 🔥 TIME TRACK (FIX REAL)
+  // 🔥 TIME TRACK (PRO)
   // =========================
 
   useEffect(() => {
@@ -105,6 +98,8 @@ export default function PropertyPage() {
     let last = Date.now()
 
     const interval = setInterval(() => {
+      if (document.hidden) return // 🔥 evita inflar métricas
+
       const now = Date.now()
       const delta = now - last
       last = now
@@ -122,7 +117,7 @@ export default function PropertyPage() {
   }, [propertyId])
 
   // =========================
-  // 🔥 REACH TRACK (FIX REAL)
+  // 🔥 REACH TRACK
   // =========================
 
   useEffect(() => {
@@ -241,6 +236,10 @@ export default function PropertyPage() {
     window.location.href = `mailto:${property.agentEmail}`
   }
 
+  // =========================
+  // UI
+  // =========================
+
   if (!property) return <div className="p-10">Cargando...</div>
 
   return (
@@ -276,25 +275,36 @@ export default function PropertyPage() {
 
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-          <div className="bg-white p-6 rounded-xl">
+          <div className="bg-white p-6 rounded-xl relative">
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-3 right-3"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
             {!sent ? (
               <>
                 <input
+                  className="w-full border p-3 mb-3"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Nombre"
                 />
+
                 <input
+                  className="w-full border p-3 mb-3"
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
                   placeholder="Contacto"
                 />
+
                 <Button onClick={handleSubmitLead}>
-                  {loading ? "..." : "Enviar"}
+                  {loading ? "Enviando..." : "Enviar"}
                 </Button>
               </>
             ) : (
-              <p>✅ Enviado</p>
+              <p className="text-center">✅ Enviado</p>
             )}
           </div>
         </div>
