@@ -258,13 +258,21 @@ export default async function Page({ params }: { params: { id: string } }) {
   )
 }
 
+// 🔥 FIX AQUÍ (único cambio real)
 function Stat({ label, value }: any) {
+  const displayValue =
+    value === null || value === undefined
+      ? 0
+      : typeof value === "number"
+        ? Number.isFinite(value)
+          ? value
+          : 0
+        : value
+
   return (
     <div className="p-4 border bg-white rounded-xl">
       <p>{label}</p>
-      <p className="text-xl font-bold">
-        {Number.isFinite(value) ? value : 0}
-      </p>
+      <p className="text-xl font-bold">{displayValue}</p>
     </div>
   )
 }
