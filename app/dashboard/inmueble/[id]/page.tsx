@@ -355,47 +355,69 @@ sortedByTime.forEach((v: any) => {
                   new Date(b.createdAt).getTime() -
                   new Date(a.createdAt).getTime()
               )
-              .map((lead: any, i: number) => (
-                <div
-                  key={lead.id || i}
-                  className="p-4 border rounded-lg flex justify-between"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {lead.type === "whatsapp"
-                        ? "WhatsApp"
-                        : "Formulario"}
-                    </p>
+              .map((lead: any, i: number) => {
+  const createdAt = new Date(lead.createdAt)
+  const diff = Date.now() - createdAt.getTime()
 
-                    {/* 🔥 FIX */}
-                    {lead.name && (
-                      <p className="text-sm font-medium">
-                        {lead.name}
-                      </p>
-                    )}
+  const isNew = diff < 10 * 60 * 1000 // 🔥 10 min
 
-                    {lead.contact && (
-                      <p className="text-sm text-muted-foreground">
-                        {lead.contact.length > 6
-                          ? lead.contact.slice(0, 3) +
-                            "***" +
-                            lead.contact.slice(-2)
-                          : lead.contact}
-                      </p>
-                    )}
-                  </div>
+  return (
+    <div
+      key={lead.id || i}
+      className={`p-4 border rounded-lg flex justify-between ${
+        isNew ? "bg-green-50 border-green-300" : "bg-white"
+      }`}
+    >
+      <div>
+        {/* HEADER */}
+        <div className="flex items-center gap-2">
+          <p className="font-medium">
+            {lead.type === "whatsapp"
+              ? "WhatsApp"
+              : "Formulario"}
+          </p>
 
-                  <div className="text-xs text-muted-foreground">
-                    {new Date(lead.createdAt).toLocaleDateString()}
-                  </div>
-                </div>
-              ))}
-          </div>
+          {/* STATUS */}
+          <span
+            className={`text-xs px-2 py-1 rounded ${
+              isNew
+                ? "bg-green-200 text-green-800"
+                : "bg-gray-200 text-gray-600"
+            }`}
+          >
+            {isNew ? "Nuevo" : "Visto"}
+          </span>
+        </div>
+
+        {/* NOMBRE */}
+        {lead.name && (
+          <p className="text-sm font-medium mt-1">
+            {lead.name}
+          </p>
         )}
+
+        {/* CONTACTO (ahora completo) */}
+        {lead.contact && (
+          <p className="text-sm text-muted-foreground">
+            {lead.contact}
+          </p>
+        )}
+
+        {/* DEBUG SESSION (opcional pero útil) */}
+        {lead.sessionId && (
+          <p className="text-xs text-gray-400">
+            session: {lead.sessionId.slice(0, 8)}...
+          </p>
+        )}
+      </div>
+
+      {/* FECHA */}
+      <div className="text-xs text-muted-foreground">
+        {createdAt.toLocaleString()}
       </div>
     </div>
   )
-}
+})
 
 function Stat({ label, value }: any) {
   const displayValue =
