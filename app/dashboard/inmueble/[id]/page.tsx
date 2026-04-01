@@ -119,12 +119,33 @@ export default async function Page({ params }: { params: { id: string } }) {
   const revisitsReal = totalVisitsReal - uniqueUsersReal
 
   const intensityReal = uniqueUsersReal ? revisitsReal / uniqueUsersReal : 0
+const HOT_WINDOW = 2 * 60 * 1000 // 2 min
 
+const sortedByTime = [...visits].sort(
+  (a: any, b: any) =>
+    new Date(a.createdAt).getTime() -
+    new Date(b.createdAt).getTime()
+)
+
+const validSessions = new Set<string>()
+const lastSeenBySession: Record<string, number> = {}
+
+sortedByTime.forEach((v: any) => {
+  const t = new Date(v.createdAt).getTime()
+  const last = lastSeenBySession[v.sessionId] || 0
+
+  if (t - last > HOT_WINDOW) {
+    validSessions.add(v.sessionId)
+    lastSeenBySession[v.sessionId] = t
+  }
+})
   const sessionsMap: Record<string, number> = {}
 
   visits.forEach((v: any) => {
-    sessionsMap[v.sessionId] = (sessionsMap[v.sessionId] || 0) + 1
-  })
+  if (!validSessions.has(v.sessionId)) return
+
+  sessionsMap[v.sessionId] = (sessionsMap[v.sessionId] || 0) + 1
+})
 
   const usersWhoRevisit = Object.values(sessionsMap).filter((c) => c > 1).length
 
