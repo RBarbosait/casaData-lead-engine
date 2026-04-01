@@ -22,6 +22,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const insights = getInsights(visits, leads, sessionAnalytics)
 
+  // 🔒 SAFE
   const safeNumber = (n: any) => (Number.isFinite(n) ? n : 0)
 
   const totalSessions = sessionAnalytics.length
@@ -51,25 +52,13 @@ export default async function Page({ params }: { params: { id: string } }) {
     totalSessions ? (usersReachedContact / totalSessions) * 100 : 0
   )
 
-  const reachCounts: Record<string, number> = {}
-
-  sessionAnalytics.forEach((s: any) => {
-    const sections = (s?.reach as string[] | null) || []
-    sections.forEach((section) => {
-      reachCounts[section] = (reachCounts[section] || 0) + 1
-    })
-  })
-
-  const sortedReach = Object.entries(reachCounts).sort(
-    (a, b) => b[1] - a[1]
-  )
-
   const highIntentUsers = sessionAnalytics.filter((s: any) => {
     const time = s?.timeSpent || 0
     const reach = (s?.reach as string[] | null) || []
     return time > 15000 || reach.includes("contact")
   })
 
+  // 🔥 SCORE
   const normVisits = Math.min(visits.length / 50, 1)
 
   const uniqueSessions = new Set(
@@ -97,6 +86,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     ) * 100
   )
 
+  // 🔥 VISITS
   const sortedVisits = [...visits].sort(
     (a, b) =>
       new Date(a.createdAt).getTime() -
@@ -134,6 +124,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     (c) => c > 1
   ).length
 
+  // 🔥 STATUS SAFE
   const statusColor: Record<string, string> = {
     alta_demanda: "text-green-600",
     interes_activo: "text-yellow-600",
@@ -141,15 +132,18 @@ export default async function Page({ params }: { params: { id: string } }) {
     nuevo: "text-gray-500",
   }
 
-  const safeStatus = statusColor[insights.status] || "text-gray-500"
+  const safeStatus = statusColor[insights?.status] || "text-gray-500"
+  const safeStatusText = (insights?.status || "nuevo").toUpperCase()
 
-  const total = insights.totalVisits
-  const qrPercent = total ? (insights.qrVisits / total) * 100 : 0
-  const webPercent = total ? (insights.webVisits / total) * 100 : 0
+  // 🔥 ORIGEN
+  const total = insights?.totalVisits || 0
+  const qrPercent = safeNumber(total ? (insights.qrVisits / total) * 100 : 0)
+  const webPercent = safeNumber(total ? (insights.webVisits / total) * 100 : 0)
 
   return (
     <div className="p-8 space-y-8 bg-gray-50 min-h-screen max-w-5xl mx-auto">
 
+      {/* HEADER */}
       <div>
         <h1 className="text-3xl font-bold">{property.title}</h1>
         <p className="text-muted-foreground">{property.location}</p>
@@ -162,24 +156,30 @@ export default async function Page({ params }: { params: { id: string } }) {
 
         <div className="p-6 mt-6 rounded-xl border bg-white">
           <p className="text-sm mb-2">Índice de intención</p>
-          <h2 className="text-4xl font-bold">{intentionScore}/100</h2>
+          <h2 className="text-4xl font-bold">
+            {safeNumber(intentionScore)}/100
+          </h2>
         </div>
       </div>
 
+      {/* STATUS */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="p-6 border bg-white rounded-xl">
           <p className="text-sm mb-2">Estado</p>
           <h2 className={`font-bold ${safeStatus}`}>
-            {insights.status.toUpperCase()}
+            {safeStatusText}
           </h2>
         </div>
 
         <div className="p-6 border bg-white rounded-xl">
           <p className="text-sm mb-2">Score</p>
-          <h2 className="text-3xl font-bold">{insights.score}/100</h2>
+          <h2 className="text-3xl font-bold">
+            {safeNumber(insights?.score)}/100
+          </h2>
         </div>
       </div>
 
+      {/* METRICS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Stat label="Visitas" value={totalVisitsReal} />
         <Stat label="Usuarios únicos" value={uniqueUsersReal} />
@@ -187,13 +187,15 @@ export default async function Page({ params }: { params: { id: string } }) {
         <Stat label="Revisitas" value={revisitsReal} />
       </div>
 
+      {/* INTENSIDAD */}
       <div className="p-6 border bg-white rounded-xl">
         <h3>Intensidad</h3>
         <p className="text-3xl font-bold">
-          {intensityReal.toFixed(2)}
+          {safeNumber(intensityReal).toFixed(2)}
         </p>
       </div>
 
+      {/* BEHAVIOR */}
       <div className="grid md:grid-cols-4 gap-4">
         <Stat label="Tiempo" value={`${(avgTime / 1000).toFixed(1)}s`} />
         <Stat label="Secciones" value={avgReach.toFixed(1)} />
@@ -201,12 +203,13 @@ export default async function Page({ params }: { params: { id: string } }) {
         <Stat label="Alta intención" value={highIntentUsers.length} />
       </div>
 
+      {/* ORIGEN */}
       <div className="p-6 border bg-white rounded-xl">
         <Bar label="Web" value={webPercent} />
         <Bar label="QR" value={qrPercent} />
       </div>
 
-      {/* 🔥 LEADS (FIX CORRECTO) */}
+      {/* LEADS */}
       <div className="p-6 border bg-white rounded-xl">
         <h3 className="font-semibold mb-4">Personas interesadas</h3>
 
@@ -217,14 +220,15 @@ export default async function Page({ params }: { params: { id: string } }) {
         ) : (
           <div className="space-y-3">
             {[...leads]
+              .filter((l) => l && l.createdAt)
               .sort(
                 (a, b) =>
                   new Date(b.createdAt).getTime() -
                   new Date(a.createdAt).getTime()
               )
-              .map((lead: any) => (
+              .map((lead: any, i: number) => (
                 <div
-                  key={lead.id}
+                  key={lead.id || i}
                   className="p-4 border rounded-lg flex justify-between"
                 >
                   <div>
@@ -233,6 +237,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                         ? "WhatsApp"
                         : "Formulario"}
                     </p>
+
                     {lead.contact && (
                       <p className="text-sm text-muted-foreground">
                         {lead.contact}
@@ -257,19 +262,23 @@ function Stat({ label, value }: any) {
   return (
     <div className="p-4 border bg-white rounded-xl">
       <p>{label}</p>
-      <p className="text-xl font-bold">{value}</p>
+      <p className="text-xl font-bold">
+        {Number.isFinite(value) ? value : 0}
+      </p>
     </div>
   )
 }
 
 function Bar({ label, value }: any) {
+  const safe = Number.isFinite(value) ? value : 0
+
   return (
-    <div>
-      <p>{label} {value.toFixed(0)}%</p>
+    <div className="mb-2">
+      <p>{label} {safe.toFixed(0)}%</p>
       <div className="h-2 bg-gray-200 rounded">
         <div
           className="h-full bg-blue-500"
-          style={{ width: `${value}%` }}
+          style={{ width: `${Math.max(0, Math.min(safe, 100))}%` }}
         />
       </div>
     </div>
