@@ -417,8 +417,13 @@ sortedByTime.forEach((v: any) => {
       </div>
     </div>
   )
-})
-
+              })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 function Stat({ label, value }: any) {
   const displayValue =
     value === null || value === undefined
