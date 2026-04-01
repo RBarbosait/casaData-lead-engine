@@ -27,13 +27,18 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const totalSessions = sessionAnalytics.length
 
+  // 🔥 TIME SAFE (fix real)
   const totalTime = sessionAnalytics.reduce(
-    (acc: number, s: any) => acc + (s?.timeSpent || 0),
+    (acc: number, s: any) =>
+      acc + (Number.isFinite(s?.timeSpent) ? s.timeSpent : 0),
     0
   )
 
-  const avgTime = safeNumber(totalSessions ? totalTime / totalSessions : 0)
+  const avgTime = safeNumber(
+    totalSessions ? totalTime / totalSessions : 0
+  )
 
+  // 🔥 REACH SAFE
   const avgReach = safeNumber(
     totalSessions
       ? sessionAnalytics.reduce(
@@ -44,17 +49,22 @@ export default async function Page({ params }: { params: { id: string } }) {
       : 0
   )
 
-  const usersReachedContact = sessionAnalytics.filter((s: any) =>
-    (s?.reach as string[] | null)?.includes("contact")
+  // 🔥 CONTACT FIX (más real)
+  const usersReachedContact = sessionAnalytics.filter(
+    (s: any) =>
+      Array.isArray(s?.reach) &&
+      s.reach.includes("contact")
   ).length
 
   const reachContactRate = safeNumber(
-    totalSessions ? (usersReachedContact / totalSessions) * 100 : 0
+    totalSessions
+      ? Math.min(100, (usersReachedContact / totalSessions) * 100)
+      : 0
   )
 
   const highIntentUsers = sessionAnalytics.filter((s: any) => {
-    const time = s?.timeSpent || 0
-    const reach = (s?.reach as string[] | null) || []
+    const time = Number.isFinite(s?.timeSpent) ? s.timeSpent : 0
+    const reach = Array.isArray(s?.reach) ? s.reach : []
     return time > 15000 || reach.includes("contact")
   })
 
@@ -135,10 +145,16 @@ export default async function Page({ params }: { params: { id: string } }) {
   const safeStatus = statusColor[insights?.status] || "text-gray-500"
   const safeStatusText = (insights?.status || "nuevo").toUpperCase()
 
-  // 🔥 ORIGEN
+  // 🔥 ORIGEN SAFE
   const total = insights?.totalVisits || 0
-  const qrPercent = safeNumber(total ? (insights.qrVisits / total) * 100 : 0)
-  const webPercent = safeNumber(total ? (insights.webVisits / total) * 100 : 0)
+
+  const qrPercent = safeNumber(
+    total ? (insights.qrVisits / total) * 100 : 0
+  )
+
+  const webPercent = safeNumber(
+    total ? (insights.webVisits / total) * 100 : 0
+  )
 
   return (
     <div className="p-8 space-y-8 bg-gray-50 min-h-screen max-w-5xl mx-auto">
@@ -220,7 +236,12 @@ export default async function Page({ params }: { params: { id: string } }) {
         ) : (
           <div className="space-y-3">
             {[...leads]
-              .filter((l) => l && l.createdAt)
+              .filter(
+                (l) =>
+                  l &&
+                  l.createdAt &&
+                  !isNaN(new Date(l.createdAt).getTime())
+              )
               .sort(
                 (a, b) =>
                   new Date(b.createdAt).getTime() -
