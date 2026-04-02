@@ -38,7 +38,10 @@ sessionAnalytics.forEach((s: any) => {
 
   userMap[id].time += s.timeSpent || 0
 
-  const sections = (s.sections as string[] | null) || []
+  const sections =
+  (s.sections as string[] | null) ||
+  (s.reach as string[] | null) ||
+  []
   sections.forEach((sec) => userMap[id].sections.add(sec))
 })
 
