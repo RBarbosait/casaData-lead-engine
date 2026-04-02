@@ -132,7 +132,7 @@ export default function PropertyPage() {
       "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
     ],
-    const demoAgent = {
+    agent: {
   name: "Rodrigo de la Boya",
   role: "Asesor inmobiliario",
   photo: "https://randomuser.me/api/portraits/women/44.jpg",
@@ -853,7 +853,17 @@ const extras = toStringArray(
               </CardHeader>
 
               <CardContent className="space-y-3">
-                {activeProperty.agentPhone && (
+                {agent.Phone && (
+      <div className="flex items-center gap-3 mb-4">
+  <img
+    src={agent.photo}
+    className="w-12 h-12 rounded-full object-cover border"
+  />
+  <div>
+    <p className="font-medium text-gray-900">{agent.name}</p>
+    <p className="text-sm text-gray-500">{agent.role}</p>
+  </div>
+</div
                   <Button
                     onClick={handleWhatsApp}
                     className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-base font-medium"
@@ -863,7 +873,7 @@ const extras = toStringArray(
                   </Button>
                 )}
 
-                {activeProperty.agentPhone && (
+                {agent.Phone && (
                   <Button
                     onClick={() => {
                       const phone = normalizePhone(activeProperty.agentPhone)
