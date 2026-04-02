@@ -156,11 +156,16 @@ let rawScore =
 let score = Math.min(100, rawScore);
   let status: PropertyStatus = "nuevo";
 
-  if (score >= 70) status = "alta_demanda";
-  else if (score >= 40) status = "interes_activo";
-  else if (score > 0) status = "baja_demanda";
-  else status = "nuevo";
-
+ if (leadsCount >= 5 && conversionRate > 0.1) {
+  status = "alta_demanda";
+} else if (usersWhoRevisit > uniqueUsers * 0.3) {
+  status = "interes_activo";
+} else if (totalVisits > 0) {
+  status = "baja_demanda";
+} else {
+  status = "nuevo";
+}
+  
   return {
     totalVisits,
     uniqueUsers,
@@ -181,7 +186,7 @@ let score = Math.min(100, rawScore);
     score,
 
     // 🔥 NUEVO
-    avgTime,
+    avgTime: Math.round(avgTime / 1000),
     reach,
   };
 }
