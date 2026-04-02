@@ -38,9 +38,10 @@ export function getInsights(
   // 🔥 usuarios únicos
   const sessionsMap: Record<string, number> = {};
 
-  visits.forEach((v) => {
-    sessionsMap[v.sessionId] = (sessionsMap[v.sessionId] || 0) + 1;
-  });
+ visits.forEach((v) => {
+  const id = v.visitorId || v.sessionId;
+  sessionsMap[id] = (sessionsMap[id] || 0) + 1;
+});
 
   const uniqueUsers = Object.keys(sessionsMap).length;
   const sessions = Object.values(sessionsMap);
@@ -48,17 +49,19 @@ export function getInsights(
   const usersWhoRevisit = sessions.filter((c) => c > 1).length;
 
   const hotLeads = Object.entries(sessionsMap)
-    .filter(([_, count]) => count >= 3)
-    .map(([sessionId]) => {
-      const userVisits = visits.filter((v) => v.sessionId === sessionId);
+  .filter(([_, count]) => count >= 3)
+  .map(([id]) => {
+    const userVisits = visits.filter(
+      (v) => (v.visitorId || v.sessionId) === id
+    );
 
-      return {
-        sessionId,
-        visits: userVisits.length,
-        lastVisit: userVisits[userVisits.length - 1].createdAt,
-        source: userVisits[0].source,
-      };
-    });
+    return {
+      id,
+      visits: userVisits.length,
+      lastVisit: userVisits[userVisits.length - 1]?.createdAt,
+      source: userVisits[0]?.source,
+    };
+  });
 
   const revisits = sessions
     .map((c) => c - 1)
@@ -92,13 +95,14 @@ export function getInsights(
     0
   );
 
-  const timeBySession: Record<string, number> = {};
+const timeBySession: Record<string, number> = {};
 
 analytics.forEach((a) => {
-  if (!a.sessionId) return;
+  const id = a.visitorId || a.sessionId;
+  if (!id) return;
 
-  timeBySession[a.sessionId] =
-    (timeBySession[a.sessionId] || 0) + (a.timeSpent || 0);
+  timeBySession[id] =
+    (timeBySession[id] || 0) + (a.timeSpent || 0);
 });
 
 const totalUserTime = Object.values(timeBySession).reduce(
@@ -115,9 +119,9 @@ const avgTime = Object.keys(timeBySession).length
   // =========================
 
 const reachMap: Record<string, Set<string>> = {};
-
 analytics.forEach((a) => {
-  if (!a.sessionId) return;
+  const id = a.visitorId || a.sessionId;
+  if (!id) return;
 
   const sections = a.sections || [];
 
@@ -125,9 +129,10 @@ analytics.forEach((a) => {
     if (!reachMap[section]) {
       reachMap[section] = new Set();
     }
-    reachMap[section].add(a.sessionId);
+    reachMap[section].add(id);
   });
 });
+ 
 
 const reach: Record<string, number> = {};
 
