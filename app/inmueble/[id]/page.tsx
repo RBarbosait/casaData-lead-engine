@@ -980,16 +980,16 @@ const extras = toStringArray(
 
       {/* MOBILE STICKY BAR */}
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-white shadow-lg p-3 flex gap-2 lg:hidden">
-        {activeProperty.agentPhone && (
+        {agent.phone&& (
           <button
-            onClick={handleWhatsApp}
+        onClick={handleWhatsApp}
             className="flex-1 rounded-xl bg-green-600 text-white py-3 text-sm font-medium"
           >
             WhatsApp
           </button>
         )}
 
-        {activeProperty.agentPhone && (
+        {agent.phone&& (
           <button
             onClick={() => {
               const phone = normalizePhone(activeProperty.agentPhone)
