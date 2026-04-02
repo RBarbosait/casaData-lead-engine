@@ -26,51 +26,61 @@ export default async function Page({ params }: { params: { id: string } }) {
   // 🔒 SAFE
   const safeNumber = (n: any) => (Number.isFinite(n) ? n : 0)
 
-  const totalSessions = sessionAnalytics.length
+  const userMap: Record<string, { time: number; sections: Set<string> }> = {}
 
-  const totalTime = sessionAnalytics.reduce(
-    (acc: number, s: any) => acc + (s?.timeSpent || 0),
-    0
-  )
+sessionAnalytics.forEach((s: any) => {
+  const id = s.visitorId || s.sessionId
+  if (!id) return
 
-  const avgTime = safeNumber(totalSessions ? totalTime / totalSessions : 0)
+  if (!userMap[id]) {
+    userMap[id] = { time: 0, sections: new Set() }
+  }
 
-  const avgReach = safeNumber(
-    totalSessions
-      ? sessionAnalytics.reduce(
-          (acc: number, s: any) =>
-            acc + ((s?.reach as string[] | null)?.length || 0),
-          0
-        ) / totalSessions
-      : 0
-  )
+  userMap[id].time += s.timeSpent || 0
 
-  const usersReachedContact = sessionAnalytics.filter((s: any) =>
-    (s?.reach as string[] | null)?.includes("contact")
-  ).length
+  const sections = (s.sections as string[] | null) || []
+  sections.forEach((sec) => userMap[id].sections.add(sec))
+})
 
-  const reachContactRate = safeNumber(
-    totalSessions ? (usersReachedContact / totalSessions) * 100 : 0
-  )
+const users = Object.values(userMap)
+
+const totalSessions = users.length
+
+const avgTime = safeNumber(
+  totalSessions
+    ? users.reduce((acc, u) => acc + u.time, 0) / totalSessions
+    : 0
+)
+
+const avgReach = safeNumber(
+  totalSessions
+    ? users.reduce((acc, u) => acc + u.sections.size, 0) / totalSessions
+    : 0
+)
+
+const usersReachedContact = users.filter((u) =>
+  u.sections.has("contact")
+).length
+
+const reachContactRate = safeNumber(
+  totalSessions ? (usersReachedContact / totalSessions) * 100 : 0
+)
 
   const reachCounts: Record<string, number> = {}
 
-  sessionAnalytics.forEach((s: any) => {
-    const sections = (s?.reach as string[] | null) || []
-    sections.forEach((section) => {
-      reachCounts[section] = (reachCounts[section] || 0) + 1
-    })
+Object.values(userMap).forEach((u) => {
+  u.sections.forEach((section) => {
+    reachCounts[section] = (reachCounts[section] || 0) + 1
   })
+})
 
   const sortedReach = Object.entries(reachCounts).sort(
     (a: any, b: any) => b[1] - a[1]
   )
 
-  const highIntentUsers = sessionAnalytics.filter((s: any) => {
-    const time = s?.timeSpent || 0
-    const reach = (s?.reach as string[] | null) || []
-    return time > 15000 || reach.includes("contact")
-  })
+  const highIntentUsers = users.filter(
+  (u) => u.time > 15000 || u.sections.has("contact")
+)
 
   // 🔥 SCORE
   const normVisits = Math.min(visits.length / 50, 1)
