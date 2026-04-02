@@ -92,37 +92,62 @@ export function getInsights(
     0
   );
 
-  const avgTime = analytics.length
-    ? totalTime / analytics.length
-    : 0;
+  const timeBySession: Record<string, number> = {};
+
+analytics.forEach((a) => {
+  if (!a.sessionId) return;
+
+  timeBySession[a.sessionId] =
+    (timeBySession[a.sessionId] || 0) + (a.timeSpent || 0);
+});
+
+const totalUserTime = Object.values(timeBySession).reduce(
+  (a, b) => a + b,
+  0
+);
+
+const avgTime = Object.keys(timeBySession).length
+  ? totalUserTime / Object.keys(timeBySession).length
+  : 0;
 
   // =========================
   // 🔥 NUEVO: REACH
   // =========================
 
-  const reach: Record<string, number> = {};
+const reachMap: Record<string, Set<string>> = {};
 
-  analytics.forEach((a) => {
-    const sections = a.reach || [];
+analytics.forEach((a) => {
+  if (!a.sessionId) return;
 
-    sections.forEach((section: string) => {
-      reach[section] = (reach[section] || 0) + 1;
-    });
+  const sections = a.sections || [];
+
+  sections.forEach((section: string) => {
+    if (!reachMap[section]) {
+      reachMap[section] = new Set();
+    }
+    reachMap[section].add(a.sessionId);
   });
+});
+
+const reach: Record<string, number> = {};
+
+Object.entries(reachMap).forEach(([section, set]) => {
+  reach[section] = set.size;
+});
 
   // =========================
   // 🔥 SCORE (mejorado)
   // =========================
 
-  let rawScore =
-    totalVisits * 5 +
-    uniqueUsers * 2 +
-    revisits * 8 +
-    leadsCount * 25 +
-    conversionRate * 100 * 10 +
-    avgTime * 0.1; // 👈 NUEVO (impacto leve)
+const avgTimeSeconds = avgTime / 1000;
 
-  let score = Math.min(100, rawScore);
+let rawScore =
+  totalVisits * 3 +
+  uniqueUsers * 5 +
+  revisits * 10 +
+  leadsCount * 30 +
+  conversionRate * 100 * 8 +
+  Math.min(avgTimeSeconds, 120) * 0.5;
 
   let status: PropertyStatus = "nuevo";
 
