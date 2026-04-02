@@ -137,23 +137,37 @@ export default function PropertyPage() {
   }
 
   const gallery: string[] = Array.from(
-    new Set(
-      [
-        property?.image,
-        ...(Array.isArray(property?.images) ? property.images : []),
-      ].filter(Boolean)
-    )
+  new Set(
+    [
+      property?.image,
+      ...(Array.isArray(property?.images) ? property.images : []),
+      ...(demoProperty.images || []),
+    ].filter(Boolean)
   )
+)
 
-  const priceFormatted = formatPrice(property?.price)
+  const priceFormatted = formatPrice(
+  property?.price ?? demoProperty.price
+)
 
   const highlights = toStringArray(
-    property?.highlights || property?.amenities || property?.features
-  )
+  property?.highlights ||
+  property?.amenities ||
+  property?.features ||
+  demoProperty.highlights
+)
 
-  const services = toStringArray(property?.services || property?.serviceList)
+const services = toStringArray(
+  property?.services ||
+  property?.serviceList ||
+  demoProperty.services
+)
 
-  const extras = toStringArray(property?.extras || property?.detailsList)
+const extras = toStringArray(
+  property?.extras ||
+  property?.detailsList ||
+  demoProperty.extras
+)
 
   const activeProperty = property || demoProperty
   const activeGallery = gallery.length > 0 ? gallery : demoProperty.images
