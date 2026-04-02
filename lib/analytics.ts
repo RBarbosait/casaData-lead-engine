@@ -148,7 +148,7 @@ let rawScore =
   leadsCount * 30 +
   conversionRate * 100 * 8 +
   Math.min(avgTimeSeconds, 120) * 0.5;
-
+let score = Math.min(100, rawScore);
   let status: PropertyStatus = "nuevo";
 
   if (score >= 70) status = "alta_demanda";
