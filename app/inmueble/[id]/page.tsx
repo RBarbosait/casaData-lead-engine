@@ -51,6 +51,18 @@ function getSessionId() {
   return session
 }
 
+function getVisitorId() {
+  if (typeof window === "undefined") return "server"
+
+  let id = localStorage.getItem("visitorId")
+
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem("visitorId", id)
+  }
+
+  return id
+}
 function formatPrice(value: any) {
   const num = Number(value)
   if (!Number.isFinite(num) || num <= 0) return null
@@ -231,8 +243,8 @@ const extras = toStringArray(
   // =========================
   useEffect(() => {
     if (!property) return
-
     const sessionId = getSessionId()
+const visitorId = getVisitorId()
     const key = `last_visit_${propertyId}_${sessionId}`
     const lastVisit = Number(localStorage.getItem(key) || 0)
 
@@ -244,6 +256,7 @@ const extras = toStringArray(
         source:
           new URLSearchParams(window.location.search).get("src") || "web",
         sessionId,
+        visitorId, // ✅ nuevo
       })
     }
 
@@ -259,6 +272,7 @@ const extras = toStringArray(
     if (!propertyId) return
 
     const sessionId = getSessionId()
+const visitorId = getVisitorId()
     let last = Date.now()
 
     const interval = setInterval(() => {
@@ -274,6 +288,7 @@ const extras = toStringArray(
         propertyId,
         sessionId,
         timeSpent: delta,
+          visitorId, // ✅ nuevo
       })
     }, 5000)
 
@@ -287,7 +302,7 @@ const extras = toStringArray(
     if (!propertyId) return
 
     const sessionId = getSessionId()
-
+const visitorId = getVisitorId()
     const sections = ["hero", "details", "location", "features", "contact"]
     const seen = new Set<string>()
 
@@ -340,6 +355,7 @@ const extras = toStringArray(
     sendData(`${API_URL}/track-reach`, {
       propertyId,
       sessionId: getSessionId(),
+      visitorId: getVisitorId(), // ✅ nuevo
       sections: ["contact"],
     })
   }
@@ -365,6 +381,7 @@ const extras = toStringArray(
         name: safeName,
         contact: safeContact, // email o celular
         sessionId: getSessionId(),
+        visitorId: getVisitorId(), // ✅ nuevo
       }),
     })
 
@@ -387,6 +404,7 @@ const extras = toStringArray(
         propertyId,
         type: "whatsapp",
         sessionId: getSessionId(),
+        visitorId: getVisitorId(),
       }),
     }).catch(() => {})
 
@@ -406,6 +424,7 @@ const extras = toStringArray(
         propertyId,
         type: "form",
         sessionId: getSessionId(),
+        visitorId: getVisitorId(),
       }),
     })
 window.location.href = `mailto:${agent.email}`
