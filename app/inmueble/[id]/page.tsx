@@ -852,75 +852,83 @@ const extras = toStringArray(
                 <CardTitle>Contacto</CardTitle>
               </CardHeader>
 
-              <CardContent className="space-y-3">
-                {agent.Phone && (
+          <CardContent className="space-y-3">
+
+  {agent.phone && (
+    <>
+      {/* AGENTE */}
       <div className="flex items-center gap-3 mb-4">
-  <img
-    src={agent.photo}
-    className="w-12 h-12 rounded-full object-cover border"
-  />
-  <div>
-    <p className="font-medium text-gray-900">{agent.name}</p>
-    <p className="text-sm text-gray-500">{agent.role}</p>
+        <img
+          src={agent.photo}
+          className="w-12 h-12 rounded-full object-cover border"
+        />
+        <div>
+          <p className="font-medium text-gray-900">{agent.name}</p>
+          <p className="text-sm text-gray-500">{agent.role}</p>
+          <p className="text-xs text-green-600 font-medium">
+            ● Responde en minutos
+          </p>
+        </div>
+      </div>
+
+      {/* WHATSAPP */}
+      <Button
+        onClick={handleWhatsApp}
+        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-base font-medium"
+      >
+        <MessageCircle className="w-4 h-4 mr-2" />
+        WhatsApp
+      </Button>
+
+      {/* LLAMAR */}
+      <Button
+        onClick={() => {
+          const phone = normalizePhone(agent.phone)
+          window.location.href = `tel:${phone}`
+        }}
+        variant="outline"
+        className="w-full"
+      >
+        <Phone className="w-4 h-4 mr-2" />
+        Llamar
+      </Button>
+    </>
+  )}
+
+  {agent.email && (
+    <Button
+      onClick={handleEmail}
+      variant="outline"
+      className="w-full"
+    >
+      <Mail className="w-4 h-4 mr-2" />
+      Email
+    </Button>
+  )}
+
+  <Button
+    onClick={() => setShowModal(true)}
+    className="w-full bg-slate-900 hover:bg-slate-800 text-white"
+  >
+    Dejar datos
+  </Button>
+
+  <button
+    onClick={copyPropertyLink}
+    className="w-full text-sm text-gray-600 hover:text-black inline-flex items-center justify-center gap-2 py-2"
+  >
+    <Copy className="w-4 h-4" />
+    {copied ? "Enlace copiado" : "Copiar enlace"}
+  </button>
+
+  <div className="rounded-xl bg-slate-50 border p-4 text-sm text-slate-700">
+    <p className="font-medium text-slate-900">Respuesta rápida</p>
+    <p className="mt-1">
+      Dejá tu email o celular y te contactamos. El mismo input acepta cualquiera de los dos.
+    </p>
   </div>
-</div
-                  <Button
-                    onClick={handleWhatsApp}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-base font-medium"
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    WhatsApp
-                  </Button>
-                )}
 
-                {agent.Phone && (
-                  <Button
-                    onClick={() => {
-                      const phone = normalizePhone(activeProperty.agentPhone)
-                      window.location.href = `tel:${phone}`
-                    }}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <Phone className="w-4 h-4 mr-2" />
-                    Llamar
-                  </Button>
-                )}
-
-                {activeProperty.agentEmail && (
-                  <Button
-                    onClick={handleEmail}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Email
-                  </Button>
-                )}
-
-                <Button
-                  onClick={() => setShowModal(true)}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white"
-                >
-                  Dejar datos
-                </Button>
-
-                <button
-                  onClick={copyPropertyLink}
-                  className="w-full text-sm text-gray-600 hover:text-black inline-flex items-center justify-center gap-2 py-2"
-                >
-                  <Copy className="w-4 h-4" />
-                  {copied ? "Enlace copiado" : "Copiar enlace"}
-                </button>
-
-                <div className="rounded-xl bg-slate-50 border p-4 text-sm text-slate-700">
-                  <p className="font-medium text-slate-900">Respuesta rápida</p>
-                  <p className="mt-1">
-                    Dejá tu email o celular y te contactamos. El mismo input
-                    acepta cualquiera de los dos.
-                  </p>
-                </div>
-              </CardContent>
+</CardContent>
             </Card>
 
             <Card className="shadow-sm">
