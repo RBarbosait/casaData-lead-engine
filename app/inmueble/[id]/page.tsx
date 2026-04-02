@@ -373,9 +373,9 @@ const extras = toStringArray(
   }
 
   const handleWhatsApp = async () => {
-    if (!activeProperty?.agentPhone) return
+    if (!agent.phone) return
 
-    const phone = normalizePhone(activeProperty.agentPhone)
+    const phone = normalizePhone(agent.phone)
     const url = `https://wa.me/${phone}`
 
     trackContact()
@@ -394,7 +394,8 @@ const extras = toStringArray(
   }
 
   const handleEmail = async () => {
-    if (!activeProperty?.agentEmail) return
+    if (!agent.email) return
+
 
     trackContact()
 
@@ -407,8 +408,7 @@ const extras = toStringArray(
         sessionId: getSessionId(),
       }),
     })
-
-    window.location.href = `mailto:${activeProperty.agentEmail}`
+window.location.href = `mailto:${agent.email}`
   }
 
   const copyPropertyLink = async () => {
@@ -992,7 +992,7 @@ const extras = toStringArray(
         {agent.phone&& (
           <button
             onClick={() => {
-              const phone = normalizePhone(activeProperty.agentPhone)
+              const phone = normalizePhone(agent.phone)
               window.location.href = `tel:${phone}`
             }}
             className="flex-1 rounded-xl border py-3 text-sm font-medium"
