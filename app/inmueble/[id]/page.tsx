@@ -132,9 +132,15 @@ export default function PropertyPage() {
       "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
     ],
-    agentPhone: "59891234567",
-    agentEmail: "contacto@casadata.uy",
+    const demoAgent = {
+  name: "Rodrigo de la Boya",
+  role: "Asesor inmobiliario",
+  photo: "https://randomuser.me/api/portraits/women/44.jpg",
+  phone: "59895083633",
+  email: "rbarbosa@casadata.uy",
+},
   }
+  
 
   const gallery: string[] = Array.from(
   new Set(
@@ -162,7 +168,32 @@ const services = toStringArray(
   property?.serviceList ||
   demoProperty.services
 )
+const agent = {
+  name:
+    property?.agentName ||
+    property?.agent?.name ||
+    demoProperty.agent.name,
 
+  role:
+    property?.agentRole ||
+    property?.agent?.role ||
+    demoProperty.agent.role,
+
+  photo:
+    property?.agentPhoto ||
+    property?.agent?.photo ||
+    demoProperty.agent.photo,
+
+  phone:
+    property?.agentPhone ||
+    property?.agent?.phone ||
+    demoProperty.agent.phone,
+
+  email:
+    property?.agentEmail ||
+    property?.agent?.email ||
+    demoProperty.agent.email,
+}
 const extras = toStringArray(
   property?.extras ||
   property?.detailsList ||
