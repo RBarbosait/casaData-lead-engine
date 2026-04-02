@@ -312,6 +312,7 @@ const visitorId = getVisitorId()
       sendData(`${API_URL}/track-reach`, {
         propertyId,
         sessionId,
+        visitorId,
         sections: Array.from(seen),
       })
     }
