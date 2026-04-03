@@ -38,12 +38,21 @@ sessionAnalytics.forEach((s: any) => {
 
   userMap[id].time += s.timeSpent || 0
 
-  const sections =
-  (s.sections as string[] | null) ||
-  (s.reach as string[] | null) ||
-  []
-  sections.forEach((sec) => userMap[id].sections.add(sec))
-})
+  let sections: string[] = []
+
+if (Array.isArray(s.sections)) {
+  sections = s.sections
+} else if (Array.isArray(s.reach)) {
+  sections = s.reach
+} else if (typeof s.reach === "string") {
+  try {
+    sections = JSON.parse(s.reach)
+  } catch {
+    sections = []
+  }
+}
+
+sections.forEach((sec) => userMap[id].sections.add(sec))
 
 const users = Object.values(userMap)
 
@@ -119,20 +128,15 @@ Object.values(userMap).forEach((u) => {
 
   const WINDOW = 60000
 
-  let uniqueUsersReal = 0
-  let lastClusterTime = 0
-
-  sortedVisits.forEach((visit: any) => {
-    const t = new Date(visit.createdAt).getTime()
-    if (t - lastClusterTime > WINDOW) {
-      uniqueUsersReal++
-      lastClusterTime = t
-    }
-  })
+  const uniqueUsersReal = new Set(
+  visits.map((v) => v.visitorId || v.sessionId)
+).size
 
   const revisitsReal = totalVisitsReal - uniqueUsersReal
 
-  const intensityReal = uniqueUsersReal ? revisitsReal / uniqueUsersReal : 0
+  const intensityReal = uniqueUsersReal
+  ? revisitsReal / uniqueUsersReal
+  : 0
 const HOT_WINDOW = 2 * 60 * 1000 // 2 min
 
 const sortedByTime = [...visits].sort(
