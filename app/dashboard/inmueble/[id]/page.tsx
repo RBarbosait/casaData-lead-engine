@@ -53,7 +53,7 @@ if (Array.isArray(s.sections)) {
 }
 
 sections.forEach((sec) => userMap[id].sections.add(sec))
-
+})
 const users = Object.values(userMap)
 
 const totalSessions = users.length
