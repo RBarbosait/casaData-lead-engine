@@ -17,9 +17,9 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const property = await res.json()
 
-  const visits = property.visits || []
-  const leads = property.leads || []
-  const sessionAnalytics = property.sessionAnalytics || []
+  const visits: any[] = property.visits || []
+  const leads: any[] = property.leads || []
+  const sessionAnalytics: any[] = property.sessionAnalytics || []
 
   const insights = getInsights(visits, leads, sessionAnalytics)
 
@@ -28,71 +28,72 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const userMap: Record<string, { time: number; sections: Set<string> }> = {}
 
-sessionAnalytics.forEach((s: any) => {
-  const id = s.visitorId || s.sessionId
-  if (!id) return
+  sessionAnalytics.forEach((s: any) => {
+    const id = s.visitorId || s.sessionId
+    if (!id) return
 
-  if (!userMap[id]) {
-    userMap[id] = { time: 0, sections: new Set() }
-  }
+    if (!userMap[id]) {
+      userMap[id] = { time: 0, sections: new Set() }
+    }
 
-  userMap[id].time += s.timeSpent || 0
+    userMap[id].time += s.timeSpent || 0
 
-  let sections: string[] = []
+    let sections: string[] = []
 
-if (Array.isArray(s.sections)) {
-  sections = s.sections
-} else if (Array.isArray(s.reach)) {
-  sections = s.reach
-} else if (typeof s.reach === "string") {
-  try {
-    sections = JSON.parse(s.reach)
-  } catch {
-    sections = []
-  }
-}
+    if (Array.isArray(s.sections)) {
+      sections = s.sections
+    } else if (Array.isArray(s.reach)) {
+      sections = s.reach
+    } else if (typeof s.reach === "string") {
+      try {
+        sections = JSON.parse(s.reach)
+      } catch {
+        sections = []
+      }
+    }
 
-sections.forEach((sec) => userMap[id].sections.add(sec))
-})
-const users = Object.values(userMap)
+    sections.forEach((sec: string) => userMap[id].sections.add(sec))
+  })
 
-const totalSessions = users.length
+  const users = Object.values(userMap)
 
-const avgTime = safeNumber(
-  totalSessions
-    ? users.reduce((acc, u) => acc + u.time, 0) / totalSessions
-    : 0
-)
+  const totalSessions = users.length
 
-const avgReach = safeNumber(
-  totalSessions
-    ? users.reduce((acc, u) => acc + u.sections.size, 0) / totalSessions
-    : 0
-)
+  const avgTime = safeNumber(
+    totalSessions
+      ? users.reduce((acc: number, u: any) => acc + u.time, 0) / totalSessions
+      : 0
+  )
 
-const usersReachedContact = users.filter((u) =>
-  u.sections.has("contact")
-).length
+  const avgReach = safeNumber(
+    totalSessions
+      ? users.reduce((acc: number, u: any) => acc + u.sections.size, 0) / totalSessions
+      : 0
+  )
 
-const reachContactRate = safeNumber(
-  totalSessions ? (usersReachedContact / totalSessions) * 100 : 0
-)
+  const usersReachedContact = users.filter((u: any) =>
+    u.sections.has("contact")
+  ).length
+
+  const reachContactRate = safeNumber(
+    totalSessions ? (usersReachedContact / totalSessions) * 100 : 0
+  )
 
   const reachCounts: Record<string, number> = {}
 
-Object.values(userMap).forEach((u) => {
-  u.sections.forEach((section) => {
-    reachCounts[section] = (reachCounts[section] || 0) + 1
+  Object.values(userMap).forEach((u: any) => {
+    u.sections.forEach((section: string) => {
+      reachCounts[section] = (reachCounts[section] || 0) + 1
+    })
   })
-})
 
   const sortedReach = Object.entries(reachCounts).sort(
     (a: any, b: any) => b[1] - a[1]
   )
 
   const highIntentUsers = users.filter(
-  (u) => u.time > 15000 || u.sections.has("contact")
-)
+    (u: any) => u.time > 15000 || u.sections.has("contact")
+  )
 
   // 🔥 SCORE
   const normVisits = Math.min(visits.length / 50, 1)
@@ -129,66 +130,65 @@ Object.values(userMap).forEach((u) => {
   const WINDOW = 60000
 
   const uniqueUsersReal = new Set(
-  visits.map((v) => v.visitorId || v.sessionId)
-).size
+    visits.map((v: any) => v.visitorId || v.sessionId)
+  ).size
 
   const revisitsReal = totalVisitsReal - uniqueUsersReal
 
-  const intensityReal = uniqueUsersReal
-  ? revisitsReal / uniqueUsersReal
-  : 0
-const HOT_WINDOW = 2 * 60 * 1000 // 2 min
+  const intensityReal = uniqueUsersReal ? revisitsReal / uniqueUsersReal : 0
 
-const sortedByTime = [...visits].sort(
-  (a: any, b: any) =>
-    new Date(a.createdAt).getTime() -
-    new Date(b.createdAt).getTime()
-)
+  const HOT_WINDOW = 2 * 60 * 1000 // 2 min
 
-const validSessions = new Set<string>()
-const lastSeenBySession: Record<string, number> = {}
+  const sortedByTime = [...visits].sort(
+    (a: any, b: any) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  )
 
-sortedByTime.forEach((v: any) => {
-  const t = new Date(v.createdAt).getTime()
-  const last = lastSeenBySession[v.sessionId] || 0
+  const validSessions = new Set<string>()
+  const lastSeenBySession: Record<string, number> = {}
 
-  if (t - last > HOT_WINDOW) {
-    validSessions.add(v.sessionId)
-    lastSeenBySession[v.sessionId] = t
-  }
-})
+  sortedByTime.forEach((v: any) => {
+    const t = new Date(v.createdAt).getTime()
+    const last = lastSeenBySession[v.sessionId] || 0
+
+    if (t - last > HOT_WINDOW) {
+      validSessions.add(v.sessionId)
+      lastSeenBySession[v.sessionId] = t
+    }
+  })
+
   const sessionsMap: Record<string, number> = {}
 
   visits.forEach((v: any) => {
-  if (!validSessions.has(v.sessionId)) return
+    if (!validSessions.has(v.sessionId)) return
 
-  sessionsMap[v.sessionId] = (sessionsMap[v.sessionId] || 0) + 1
-})
+    sessionsMap[v.sessionId] = (sessionsMap[v.sessionId] || 0) + 1
+  })
 
-  const usersWhoRevisit = Object.values(sessionsMap).filter((c) => c > 1).length
+  const usersWhoRevisit = Object.values(sessionsMap).filter(
+    (c: any) => c > 1
+  ).length
 
   const hotLeads = Object.entries(sessionsMap)
-    .filter(([_, count]) => count >= 3)
-    .map(([sessionId, count]) => {
+    .filter(([_, count]: any) => count >= 3)
+    .map(([sessionId, count]: any) => {
       const sessionVisits = visits
         .filter((v: any) => v.sessionId === sessionId)
         .sort(
           (a: any, b: any) =>
-            new Date(a.createdAt).getTime() -
-            new Date(b.createdAt).getTime()
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         )
 
       const lastVisit = sessionVisits[sessionVisits.length - 1]
 
       const relatedLead =
-  leads.find((l: any) => l.sessionId === sessionId) ||
-  leads
-    .filter((l: any) => l && l.createdAt)
-    .sort(
-      (a: any, b: any) =>
-        new Date(b.createdAt).getTime() -
-        new Date(a.createdAt).getTime()
-    )[0]
+        leads.find((l: any) => l.sessionId === sessionId) ||
+        leads
+          .filter((l: any) => l && l.createdAt)
+          .sort(
+            (a: any, b: any) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )[0]
 
       return {
         sessionId,
@@ -308,7 +308,7 @@ sortedByTime.forEach((v: any) => {
           </p>
         ) : (
           <div className="space-y-3">
-            {hotLeads.map((lead) => (
+            {hotLeads.map((lead: any) => (
               <div
                 key={lead.sessionId}
                 className="p-4 border rounded-lg flex justify-between"
@@ -355,32 +355,32 @@ sortedByTime.forEach((v: any) => {
           </div>
         )}
       </div>
-      {/* LEADS */}
-<div className="p-6 border bg-white rounded-xl">
-  <h3 className="font-semibold mb-4">Personas interesadas</h3>
 
-  {leads.length === 0 ? (
-    <p className="text-sm text-muted-foreground">
-      Aún no hay contactos
-    </p>
-  ) : (
-    <div className="space-y-3">
-      {[...leads]
-        .filter((l) => l && l.createdAt)
-        .sort(
-          (a: any, b: any) =>
-            new Date(b.createdAt).getTime() -
-            new Date(a.createdAt).getTime()
-        )
-        .map((lead: any, i: number) => (
-          <LeadCard key={lead.id || i} lead={lead} />
-        ))}
-    </div>
-  )}
-</div>
+      {/* LEADS */}
+      <div className="p-6 border bg-white rounded-xl">
+        <h3 className="font-semibold mb-4">Personas interesadas</h3>
+
+        {leads.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Aún no hay contactos</p>
+        ) : (
+          <div className="space-y-3">
+            {[...leads]
+              .filter((l: any) => l && l.createdAt)
+              .sort(
+                (a: any, b: any) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime()
+              )
+              .map((lead: any, i: number) => (
+                <LeadCard key={lead.id || i} lead={lead} />
+              ))}
+          </div>
+        )}
       </div>
-)
+    </div>
+  )
 }
+
 function Stat({ label, value }: any) {
   const displayValue =
     value === null || value === undefined
