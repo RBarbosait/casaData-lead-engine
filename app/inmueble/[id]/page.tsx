@@ -350,6 +350,9 @@ const visitorId = getVisitorId()
     }
     
 window.addEventListener("scroll", onScroll, { passive: true })
+
+// ✅ ejecutar UNA VEZ después de render real
+setTimeout(onScroll, 300)
     return () => {
       window.removeEventListener("scroll", onScroll)
       clearTimeout(timeout)
