@@ -98,7 +98,9 @@ export default async function Page({ params }: { params: { id: string } }) {
   // 🔥 SCORE
   const normVisits = Math.min(visits.length / 50, 1)
 
-  const uniqueSessions = new Set(visits.map((v: any) => v.sessionId)).size
+  const uniqueSessions = new Set(
+  visits.map((v: any) => v.visitorId || v.sessionId)
+).size
 
   const normRevisits = Math.min(
     visits.length ? (visits.length - uniqueSessions) / visits.length : 0,
