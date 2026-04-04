@@ -234,41 +234,80 @@ const conversionRate = uniqueUsersReal
   : 0
 // 🔥 INSIGHTS AUTOMÁTICOS
 
-const insightsList: string[] = []
+// 🔥 INSIGHTS AUTOMÁTICOS PRO
+// Cada insight ahora lleva:
+// - text: qué está pasando
+// - action: qué conviene hacer
 
-// ⚡ Conversión
+type InsightItem = {
+  text: string
+  action?: string
+}
+
+const insightsList: InsightItem[] = []
+
+// ⚡ Conversión general
+// Mide si la ficha convierte bien respecto a los usuarios únicos.
 if (conversionRate > 10) {
-  insightsList.push("🔥 Alta conversión: la ficha está funcionando muy bien")
+  insightsList.push({
+    text: "Alta conversión detectada",
+    action: "Podés aumentar tráfico a esta ficha",
+  })
 } else if (conversionRate < 3 && totalVisitsReal > 20) {
-  insightsList.push("⚠️ Baja conversión: revisar precio, contenido o CTA")
+  insightsList.push({
+    text: "Baja conversión",
+    action: "Revisar precio, fotos o propuesta de valor",
+  })
 }
 
 // 🎯 Eficiencia de intención
+// Mide si los usuarios con señales fuertes realmente terminan convirtiendo.
 if (intentEfficiency > 50) {
-  insightsList.push("🎯 Alta eficiencia: los usuarios interesados convierten")
+  insightsList.push({
+    text: "Alta eficiencia de intención",
+    action: "Los usuarios interesados están convirtiendo bien",
+  })
 } else if (intentUsers > 5 && intentEfficiency < 30) {
-  insightsList.push("⚠️ Interés sin conversión: posible fricción en contacto")
+  insightsList.push({
+    text: "Interés sin conversión",
+    action: "Simplificar contacto o mejorar CTA",
+  })
 }
 
-// ⏱ Tiempo a lead
+// ⏱ Tiempo a primer lead
+// Mide cuánto tarda la primera conversión desde la primera visita registrada.
 if (timeToFirstLead !== null) {
   const seconds = timeToFirstLead / 1000
 
   if (seconds < 60) {
-    insightsList.push("⚡ Conversión rápida: decisión emocional")
+    insightsList.push({
+      text: "Conversión rápida",
+      action: "La ficha genera decisión inmediata",
+    })
   } else if (seconds > 600) {
-    insightsList.push("🧠 Conversión lenta: usuarios evalúan antes de contactar")
+    insightsList.push({
+      text: "Conversión lenta",
+      action: "Usuarios evalúan antes de contactar",
+    })
   }
 }
 
 // 🔁 Revisitas
+// Detecta si los usuarios vuelven varias veces a la ficha.
 if (intensityReal > 1.5) {
-  insightsList.push("🔁 Alto interés: los usuarios vuelven varias veces")
+  insightsList.push({
+    text: "Alto interés detectado",
+    action: "Usuarios vuelven varias veces a la ficha",
+  })
 }
 
 // 📉 Sin leads
+// Si hay mucho tráfico pero ningún contacto, hay fricción clara.
 if (leads.length === 0 && totalVisitsReal > 30) {
-  insightsList.push("🚨 Tráfico sin conversión: problema claro en la ficha")
+  insightsList.push({
+    text: "Tráfico sin conversión",
+    action: "Problema claro en contenido o contacto",
+  })
 }
   // 🔥 STATUS SAFE
   const statusColor: Record<string, string> = {
@@ -367,23 +406,31 @@ if (leads.length === 0 && totalVisitsReal > 30) {
       Aún no hay suficientes datos
     </p>
   ) : (
-    <ul className="space-y-2">
-      {insightsList.map((insight, i) => (
-        <li key={i} className="text-sm">
-          {insight}
-        </li>
-      ))}
-    </ul>
+    <div className="space-y-3">
+  {insightsList.slice(0, 3).map((insight, i) => (
+    <div key={i}>
+      <p className="text-sm font-medium text-gray-800">
+        🔥 {insight.text}
+      </p>
+
+      {insight.action && (
+        <p className="text-xs text-gray-500">
+          → {insight.action}
+        </p>
+      )}
+    </div>
+  ))}
+</div>
   )}
 </div>
       {/* BEHAVIOR */}
-      <div className="grid md:grid-cols-4 gap-4">
-        <Stat label="Tiempo" value={`${(avgTime / 1000).toFixed(1)}s`} />
-        <Stat label="Secciones" value={avgReach.toFixed(1)} />
-        <Stat label="Contacto" value={`${reachContactRate.toFixed(0)}%`} />
-        <Stat label="Alta intención" value={highIntentUsers.length} />
-      </div>
-
+     
+<div className="grid md:grid-cols-4 gap-4">
+  <Stat label="Tiempo promedio en ficha" value={`${(avgTime / 1000).toFixed(1)}s`} />
+  <Stat label="Profundidad de navegación" value={avgReach.toFixed(1)} />
+  <Stat label="Tasa de contacto" value={`${reachContactRate.toFixed(0)}%`} />
+  <Stat label="Usuarios altamente interesados" value={highIntentUsers.length} />
+</div>
       {/* ORIGEN */}
       <div className="p-6 border bg-white rounded-xl space-y-4">
         <Bar label="Web" value={webPercent} />
