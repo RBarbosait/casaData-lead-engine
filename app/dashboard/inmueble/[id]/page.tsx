@@ -420,7 +420,7 @@ const retention = prev ? (current / prev) * 100 : 100
                 ↓ -{drop}% desde {SECTION_ORDER[i - 1]}
               </p>
             )}
-            {i > 0 && (
+            {i > 0 && prev > 0 && (
   <p className="text-xs text-muted-foreground">
     Retención: {retention.toFixed(0)}%
   </p>
