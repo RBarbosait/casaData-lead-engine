@@ -191,13 +191,14 @@ export default async function Page({ params }: { params: { id: string } }) {
           )[0]
 
       return {
-        sessionId,
-        count,
-        lastVisitAt: lastVisit?.createdAt || null,
-        lastContactAt: relatedLead?.createdAt || null,
-        contact: relatedLead?.contact || null, // 🔥 FIX
-        source: sessionVisits[0]?.source || "web",
-      }
+  sessionId,
+  count,
+  lastVisitAt: lastVisit?.createdAt || null,
+  lastContactAt: relatedLead?.createdAt || null,
+  contact: relatedLead?.contact || null,
+  leadType: relatedLead?.type || null, // 🔥 NUEVO
+  source: sessionVisits[0]?.source || "web",
+}
     })
   // 🔥 NUEVAS MÉTRICAS (performance de ficha)
 
@@ -517,13 +518,17 @@ const retention = prev ? (current / prev) * 100 : 100
                       {new Date(lead.lastContactAt).toLocaleString()}
                     </p>
                   )}
+                  {lead.leadType === "whatsapp" ? (
+  <p className="text-xs text-green-700">
+    Intentó contacto por WhatsApp
+  </p>
+) : lead.contact ? (
+  <p className="text-xs text-green-700">
+    Contacto: {lead.contact}
+  </p>
+) : null}
 
                   {/* 🔥 FIX */}
-                  {lead.contact && (
-                    <p className="text-xs text-green-700">
-                      Contacto: {lead.contact}
-                    </p>
-                  )}
                 </div>
 
                 <div className="text-xs text-muted-foreground">
