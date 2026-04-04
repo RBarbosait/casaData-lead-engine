@@ -214,7 +214,9 @@ const extras = toStringArray(
 
   const activeProperty = property || demoProperty
   const activeGallery = gallery.length > 0 ? gallery : demoProperty.images
-
+useEffect(() => {
+  window.scrollTo(0, 0)
+}, [])
   // =========================
   // LOAD PROPERTY
   // =========================
