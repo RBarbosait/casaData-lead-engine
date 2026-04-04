@@ -391,20 +391,41 @@ if (leads.length === 0 && totalVisitsReal > 30) {
       </div>
 
       {/* INTERACCIÓN POR SECCIÓN */}
-      <div className="p-6 border bg-white rounded-xl space-y-4">
-        <h3 className="font-semibold">Interacción por sección</h3>
+<div className="p-6 border bg-white rounded-xl space-y-4">
+  <h3 className="font-semibold">Interacción por sección</h3>
 
-        {sortedReach.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Aún no hay datos de reach
-          </p>
-        ) : (
-          sortedReach.map(([section, count]: any) => {
-            const percent = totalSessions ? (count / totalSessions) * 100 : 0
-            return <Bar key={section} label={section} value={percent} />
-          })
-        )}
-      </div>
+  {Object.keys(insights.reach || {}).length === 0 ? (
+    <p className="text-sm text-muted-foreground">
+      Aún no hay datos de reach
+    </p>
+  ) : (
+    (() => {
+      const SECTION_ORDER = ["hero", "details", "location", "features", "contact"]
+
+      return SECTION_ORDER.map((section, i) => {
+        const current = insights.reach?.[section] || 0
+        const prev =
+          i === 0
+            ? current
+            : insights.reach?.[SECTION_ORDER[i - 1]] || 0
+
+        const drop = i === 0 ? 0 : Math.max(0, prev - current)
+
+        return (
+          <div key={section} className="space-y-1">
+            <Bar label={section} value={current} />
+
+            {i > 0 && drop > 0 && (
+              <p className="text-xs text-red-500">
+                ↓ -{drop}% desde {SECTION_ORDER[i - 1]}
+              </p>
+            )}
+          </div>
+        )
+      })
+    })()
+  )}
+</div>
 
       {/* HOT LEADS */}
       <div className="p-6 border bg-white rounded-xl">
