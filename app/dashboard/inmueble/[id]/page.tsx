@@ -410,7 +410,7 @@ if (leads.length === 0 && totalVisitsReal > 30) {
             : insights.reach?.[SECTION_ORDER[i - 1]] || 0
 
         const drop = i === 0 ? 0 : Math.max(0, prev - current)
-
+const retention = prev ? (current / prev) * 100 : 100
         return (
           <div key={section} className="space-y-1">
             <Bar label={section} value={current} />
@@ -420,6 +420,11 @@ if (leads.length === 0 && totalVisitsReal > 30) {
                 ↓ -{drop}% desde {SECTION_ORDER[i - 1]}
               </p>
             )}
+            {i > 0 && (
+  <p className="text-xs text-muted-foreground">
+    Retención: {retention.toFixed(0)}%
+  </p>
+)}
           </div>
         )
       })
