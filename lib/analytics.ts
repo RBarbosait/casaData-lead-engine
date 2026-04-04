@@ -118,27 +118,52 @@ const avgTime = Object.keys(timeBySession).length
   // 🔥 NUEVO: REACH
   // =========================
 
-const reachMap: Record<string, Set<string>> = {};
+const SECTION_ORDER = ["hero", "details", "location", "features", "contact"];
+
+// 🔹 1. agrupar por usuario (clave)
+const userSections: Record<string, Set<string>> = {};
+
 analytics.forEach((a) => {
   const id = a.visitorId || a.sessionId;
   if (!id) return;
 
-  const sections = a.sections || [];
+  const sections =
+    typeof a.reach === "string"
+      ? JSON.parse(a.reach)
+      : a.reach || [];
+
+  if (!userSections[id]) {
+    userSections[id] = new Set();
+  }
 
   sections.forEach((section: string) => {
+    userSections[id].add(section);
+  });
+});
+
+// 🔹 2. sección → usuarios únicos
+const reachMap: Record<string, Set<string>> = {};
+
+Object.entries(userSections).forEach(([userId, sections]) => {
+  sections.forEach((section) => {
     if (!reachMap[section]) {
       reachMap[section] = new Set();
     }
-    reachMap[section].add(id);
+    reachMap[section].add(userId);
   });
 });
- 
 
+// 🔹 3. % real de usuarios
 const reach: Record<string, number> = {};
 
-Object.entries(reachMap).forEach(([section, set]) => {
-  reach[section] = set.size;
+SECTION_ORDER.forEach((section) => {
+  const users = reachMap[section]?.size || 0;
+
+  reach[section] = uniqueUsers
+    ? Math.round((users / uniqueUsers) * 100)
+    : 0;
 });
+
 
   // =========================
   // 🔥 SCORE (mejorado)
