@@ -1,4 +1,4 @@
- "use client"
+"use client"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -321,28 +321,35 @@ const visitorId = getVisitorId()
       let changed = false
 
       sections.forEach((id) => {
-        const el = document.getElementById(id)
-        if (!el) return
+  const el = document.getElementById(id)
+  if (!el) return
 
-        const rect = el.getBoundingClientRect()
+  const rect = el.getBoundingClientRect()
 
-        if (rect.top < window.innerHeight * 0.7) {
-          if (!seen.has(id)) {
-            seen.add(id)
-            changed = true
-          }
-        }
-      })
+  // 🔥 NUEVO
+  if (rect.height === 0) return
+
+  const visiblePx =
+    Math.min(rect.bottom, window.innerHeight) -
+    Math.max(rect.top, 0)
+
+  const visibleRatio = visiblePx / rect.height
+
+  if (visibleRatio > 0.4) {
+    if (!seen.has(id)) {
+      seen.add(id)
+      changed = true
+    }
+  }
+})
 
       if (changed) {
         clearTimeout(timeout)
         timeout = setTimeout(send, 800)
       }
     }
-
-    onScroll()
-    window.addEventListener("scroll", onScroll, { passive: true })
-
+    
+window.addEventListener("scroll", onScroll, { passive: true })
     return () => {
       window.removeEventListener("scroll", onScroll)
       clearTimeout(timeout)
