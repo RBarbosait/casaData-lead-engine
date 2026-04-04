@@ -127,10 +127,17 @@ analytics.forEach((a) => {
   const id = a.visitorId || a.sessionId;
   if (!id) return;
 
-  const sections =
-    typeof a.reach === "string"
-      ? JSON.parse(a.reach)
-      : a.reach || [];
+ let sections: string[] = [];
+
+if (Array.isArray(a.reach)) {
+  sections = a.reach;
+} else if (typeof a.reach === "string") {
+  try {
+    sections = JSON.parse(a.reach);
+  } catch {
+    sections = [];
+  }
+}
 
   if (!userSections[id]) {
     userSections[id] = new Set();
@@ -152,6 +159,7 @@ Object.entries(userSections).forEach(([userId, sections]) => {
     reachMap[section].add(userId);
   });
 });
+  const analyticsUsers = Object.keys(userSections).length;
 
 // 🔹 3. % real de usuarios
 const reach: Record<string, number> = {};
@@ -159,8 +167,8 @@ const reach: Record<string, number> = {};
 SECTION_ORDER.forEach((section) => {
   const users = reachMap[section]?.size || 0;
 
-  reach[section] = uniqueUsers
-    ? Math.round((users / uniqueUsers) * 100)
+  reach[section] = analyticsUsers
+    ? Math.round((users / analyticsUsers) * 100)
     : 0;
 });
 
