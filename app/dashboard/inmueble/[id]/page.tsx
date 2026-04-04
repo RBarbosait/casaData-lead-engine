@@ -199,7 +199,77 @@ export default async function Page({ params }: { params: { id: string } }) {
         source: sessionVisits[0]?.source || "web",
       }
     })
+  // 🔥 NUEVAS MÉTRICAS (performance de ficha)
 
+// ⏱ Tiempo a primer lead
+const firstVisit = sortedVisits[0]
+
+const firstLead = leads
+  .filter((l: any) => l && l.createdAt)
+  .sort(
+    (a: any, b: any) =>
+      new Date(a.createdAt).getTime() -
+      new Date(b.createdAt).getTime()
+  )[0]
+
+const timeToFirstLead =
+  firstLead && firstVisit
+    ? new Date(firstLead.createdAt).getTime() -
+      new Date(firstVisit.createdAt).getTime()
+    : null
+
+// 🎯 Usuarios con intención
+const intentUsers = users.filter(
+  (u: any) => u.time > 15000 || u.sections.size >= 3
+).length
+
+// ⚡ Eficiencia de intención
+const intentEfficiency = intentUsers
+  ? (leads.length / intentUsers) * 100
+  : 0
+
+// 🧠 Conversión de la ficha (sobre usuarios únicos)
+const conversionRate = uniqueUsersReal
+  ? (leads.length / uniqueUsersReal) * 100
+  : 0
+// 🔥 INSIGHTS AUTOMÁTICOS
+
+const insightsList: string[] = []
+
+// ⚡ Conversión
+if (conversionRate > 10) {
+  insightsList.push("🔥 Alta conversión: la ficha está funcionando muy bien")
+} else if (conversionRate < 3 && totalVisitsReal > 20) {
+  insightsList.push("⚠️ Baja conversión: revisar precio, contenido o CTA")
+}
+
+// 🎯 Eficiencia de intención
+if (intentEfficiency > 50) {
+  insightsList.push("🎯 Alta eficiencia: los usuarios interesados convierten")
+} else if (intentUsers > 5 && intentEfficiency < 30) {
+  insightsList.push("⚠️ Interés sin conversión: posible fricción en contacto")
+}
+
+// ⏱ Tiempo a lead
+if (timeToFirstLead !== null) {
+  const seconds = timeToFirstLead / 1000
+
+  if (seconds < 60) {
+    insightsList.push("⚡ Conversión rápida: decisión emocional")
+  } else if (seconds > 600) {
+    insightsList.push("🧠 Conversión lenta: usuarios evalúan antes de contactar")
+  }
+}
+
+// 🔁 Revisitas
+if (intensityReal > 1.5) {
+  insightsList.push("🔁 Alto interés: los usuarios vuelven varias veces")
+}
+
+// 📉 Sin leads
+if (leads.length === 0 && totalVisitsReal > 30) {
+  insightsList.push("🚨 Tráfico sin conversión: problema claro en la ficha")
+}
   // 🔥 STATUS SAFE
   const statusColor: Record<string, string> = {
     alta_demanda: "text-green-600",
@@ -267,7 +337,45 @@ export default async function Page({ params }: { params: { id: string } }) {
           {safeNumber(intensityReal).toFixed(2)}
         </p>
       </div>
+      {/* PERFORMANCE DE FICHA */}
+<div className="grid md:grid-cols-3 gap-4">
+  <Stat
+    label="Tiempo a primer lead"
+    value={
+      timeToFirstLead
+        ? `${(timeToFirstLead / 1000).toFixed(0)}s`
+        : "-"
+    }
+  />
 
+  <Stat
+    label="Eficiencia de intención"
+    value={`${safeNumber(intentEfficiency).toFixed(0)}%`}
+  />
+
+  <Stat
+    label="Conversión"
+    value={`${safeNumber(conversionRate).toFixed(0)}%`}
+  />
+</div>
+{/* INSIGHTS */}
+<div className="p-6 border bg-white rounded-xl">
+  <h3 className="font-semibold mb-4">Insights</h3>
+
+  {insightsList.length === 0 ? (
+    <p className="text-sm text-muted-foreground">
+      Aún no hay suficientes datos
+    </p>
+  ) : (
+    <ul className="space-y-2">
+      {insightsList.map((insight, i) => (
+        <li key={i} className="text-sm">
+          {insight}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
       {/* BEHAVIOR */}
       <div className="grid md:grid-cols-4 gap-4">
         <Stat label="Tiempo" value={`${(avgTime / 1000).toFixed(1)}s`} />
