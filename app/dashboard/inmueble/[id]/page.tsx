@@ -170,7 +170,11 @@ export default async function Page({ params }: { params: { id: string } }) {
   const usersWhoRevisit = Object.values(sessionsMap).filter(
     (c: any) => c > 1
   ).length
-
+const contactIntentSessions = new Set(
+  leads
+    .filter((l: any) => l.type === "whatsapp" || l.type === "form")
+    .map((l: any) => l.sessionId)
+)
   const hotLeads = Object.entries(sessionsMap)
     .filter(([_, count]: any) => count >= 3)
     .map(([sessionId, count]: any) => {
@@ -198,7 +202,8 @@ export default async function Page({ params }: { params: { id: string } }) {
   lastVisitAt: lastVisit?.createdAt || null,
   lastContactAt: relatedLead?.createdAt || null,
   contact: relatedLead?.contact || null,
-  leadType: relatedLead?.type || null, // 🔥 NUEVO
+  leadType: relatedLead?.type || null,
+  hasIntent: contactIntentSessions.has(sessionId), // 🔥 NUEVO
   source: sessionVisits[0]?.source || "web",
 }
     })
@@ -520,15 +525,35 @@ const retention = prev ? (current / prev) * 100 : 100
                       {new Date(lead.lastContactAt).toLocaleString()}
                     </p>
                   )}
-                  {lead.leadType === "whatsapp" ? (
+                 {lead.lastContactAt && (
+  <p className="text-xs text-green-600">
+    Último contacto:{" "}
+    {new Date(lead.lastContactAt).toLocaleString()}
+  </p>
+)}
+
+{/* 🔥 INTENTO / CONTACTO */}
+{lead.hasIntent ? (
   <p className="text-xs text-green-700">
-    Intentó contacto por WhatsApp
+    Intentó contacto{" "}
+    {lead.leadType === "whatsapp"
+      ? "por WhatsApp"
+      : lead.leadType === "form"
+      ? "por formulario"
+      : ""}
   </p>
 ) : lead.contact ? (
   <p className="text-xs text-green-700">
     Contacto: {lead.contact}
   </p>
 ) : null}
+
+{/* ⚠️ INTENTÓ PERO NO CONVIRTIÓ */}
+{lead.hasIntent && !lead.contact && (
+  <p className="text-xs text-yellow-600">
+    ⚠️ No dejó datos de contacto
+  </p>
+)}
 
                   {/* 🔥 FIX */}
                 </div>
