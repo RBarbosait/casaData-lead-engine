@@ -12,12 +12,22 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MapPin, Phone, Home, Building, Car, Search, Navigation, Share, Menu } from "lucide-react"
 import { getAllProperties, incrementPropertyViews, type Property } from "@/lib/properties"
 
-function PropertyCard({ property }: { property: Property }) {
+const FEATURED_PROPERTY_URL =
+  "https://casadata-lead-engine.pages.dev/inmueble/cmnb6o8k10000ov0054anf7tg"
+
+function PropertyCard({
+  property,
+  href,
+}: {
+  property: Property
+  href?: string
+}) {
   const handleShareProperty = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
-    const propertyUrl = `${window.location.origin}/inmueble/${property.id}`
+    const propertyUrl =
+      href || `${window.location.origin}/inmueble/${property.id}`
 
     if (navigator.share) {
       try {
@@ -60,32 +70,51 @@ function PropertyCard({ property }: { property: Property }) {
   }
 
   return (
-    <Link href={`/inmueble/${property.id}`} onClick={handleCardClick}>
+    <Link href={href || `/inmueble/${property.id}`} onClick={handleCardClick}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
         <div className="relative">
-          <img src={property.image || "/placeholder.svg"} alt={property.type} className="w-full h-48 object-cover" />
-          <Badge className="absolute top-2 left-2" variant={property.operation === "Venta" ? "default" : "secondary"}>
+          <img
+            src={property.image || "/placeholder.svg"}
+            alt={property.type}
+            className="w-full h-48 object-cover"
+          />
+          <Badge
+            className="absolute top-2 left-2"
+            variant={property.operation === "Venta" ? "default" : "secondary"}
+          >
             {property.operation}
           </Badge>
           {property.isUserGenerated && (
-            <Badge className="absolute top-2 right-2 bg-emerald-500 text-white" variant="default">
+            <Badge
+              className="absolute top-2 right-2 bg-emerald-500 text-white"
+              variant="default"
+            >
               Nuevo
             </Badge>
           )}
         </div>
+
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2 mb-1">
             {getTypeIcon(property.type)}
-            <CardTitle className="text-lg">{property.title || property.type}</CardTitle>
+            <CardTitle className="text-lg">
+              {property.title || property.type}
+            </CardTitle>
           </div>
+
           <CardDescription className="flex items-start gap-1">
             <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <span className="text-sm">{property.address}</span>
           </CardDescription>
         </CardHeader>
+
         <CardContent className="pt-0">
           <div className="flex gap-2">
-            <Button size="sm" className="flex-1" onClick={(e) => e.preventDefault()}>
+            <Button
+              size="sm"
+              className="flex-1"
+              onClick={(e) => e.preventDefault()}
+            >
               <Phone className="w-4 h-4 mr-1" />
               Contactar
             </Button>
@@ -113,7 +142,9 @@ export default function InmueblesPage() {
     const scrollTo = searchParams.get("scrollTo")
     if (scrollTo) {
       setTimeout(() => {
-        const element = document.querySelector(`[data-property-id="${scrollTo}"]`)
+        const element = document.querySelector(
+          `[data-property-id="${scrollTo}"]`
+        )
         if (element) {
           element.scrollIntoView({ behavior: "smooth", block: "center" })
         }
@@ -125,7 +156,8 @@ export default function InmueblesPage() {
     (property) =>
       property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
       property.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (property.title && property.title.toLowerCase().includes(searchTerm.toLowerCase())),
+      (property.title &&
+        property.title.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
   return (
@@ -138,12 +170,14 @@ export default function InmueblesPage() {
               <img src="/casadata-logo.png" alt="casaData" className="w-8 h-8" />
               <h1 className="text-2xl font-bold text-foreground">casaData</h1>
             </Link>
+
             <div className="flex items-center gap-2">
               <Link href="/dashboard">
                 <Button variant="ghost" size="sm">
                   Mi Dashboard
                 </Button>
               </Link>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm">
@@ -199,21 +233,30 @@ export default function InmueblesPage() {
           {nearbyMode && (
             <div className="mb-6 p-4 bg-muted rounded-lg text-center">
               <Navigation className="w-5 h-5 text-primary mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Mostrando propiedades cerca de tu ubicación</p>
+              <p className="text-sm text-muted-foreground">
+                Mostrando propiedades cerca de tu ubicación
+              </p>
             </div>
           )}
 
           {filteredProperties.length === 0 ? (
             <div className="text-center py-12">
               <Home className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No se encontraron propiedades</h3>
-              <p className="text-muted-foreground">Intenta con otros términos de búsqueda</p>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                No se encontraron propiedades
+              </h3>
+              <p className="text-muted-foreground">
+                Intenta con otros términos de búsqueda
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProperties.map((property) => (
+              {filteredProperties.map((property, index) => (
                 <div key={property.id} data-property-id={property.id}>
-                  <PropertyCard property={property} />
+                  <PropertyCard
+                    property={property}
+                    href={index === 0 ? FEATURED_PROPERTY_URL : undefined}
+                  />
                 </div>
               ))}
             </div>
@@ -226,13 +269,25 @@ export default function InmueblesPage() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <img src="/casadata-logo.png" alt="casaData" className="w-6 h-6" />
-              <span className="text-lg font-semibold text-foreground">casaData</span>
+              <img
+                src="/casadata-logo.png"
+                alt="casaData"
+                className="w-6 h-6"
+              />
+              <span className="text-lg font-semibold text-foreground">
+                casaData
+              </span>
             </div>
-            <p className="text-muted-foreground text-sm">Tu próximo hogar está a un escaneo de distancia</p>
+            <p className="text-muted-foreground text-sm">
+              Tu próximo hogar está a un escaneo de distancia
+            </p>
           </div>
         </div>
       </footer>
     </div>
   )
+}
+
+export default function Loading() {
+  return null
 }
