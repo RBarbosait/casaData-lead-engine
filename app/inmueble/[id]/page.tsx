@@ -211,7 +211,9 @@ const extras = toStringArray(
   property?.detailsList ||
   demoProperty.extras
 )
-
+const [pageLoading, setPageLoading] = useState(true)
+const [progress, setProgress] = useState(0)
+const [sending, setSending] = useState(false)
   const activeProperty = property || demoProperty
   const activeGallery = gallery.length > 0 ? gallery : demoProperty.images
 useEffect(() => {
@@ -221,16 +223,52 @@ useEffect(() => {
   // LOAD PROPERTY
   // =========================
   useEffect(() => {
-    fetch(`${API_URL}/property/${propertyId}`)
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to load property")
-        return r.json()
-      })
-      .then(setProperty)
-      .catch(() => {
-        setProperty(demoProperty)
-      })
-  }, [propertyId])
+  let mounted = true
+
+  setPageLoading(true)
+  setProgress(0)
+
+  // simulación de progreso
+  const timer = setInterval(() => {
+    setProgress((p) => {
+      if (p >= 90) return p
+      if (p < 40) return p + 8
+      if (p < 70) return p + 4
+      return p + 2
+    })
+  }, 120)
+
+  fetch(`${API_URL}/property/${propertyId}`)
+    .then((r) => {
+      if (!r.ok) throw new Error("Failed")
+      return r.json()
+    })
+    .then((data) => {
+      if (!mounted) return
+      setProperty(data)
+    })
+    .catch(() => {
+      if (!mounted) return
+      setProperty(demoProperty)
+    })
+    .finally(() => {
+      if (!mounted) return
+
+      setTimeout(() => {
+        setProgress(100)
+
+        setTimeout(() => {
+          if (!mounted) return
+          setPageLoading(false)
+        }, 200)
+      }, 200)
+    })
+
+  return () => {
+    mounted = false
+    clearInterval(timer)
+  }
+}, [propertyId])
 
   useEffect(() => {
     if (gallery.length > 0) {
@@ -453,7 +491,33 @@ window.location.href = `mailto:${agent.email}`
   // =========================
   // UI
   // =========================
-  if (!property && !demoProperty) return <div className="p-10">Cargando...</div>
+if (pageLoading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6">
+      <div className="w-full max-w-md space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-gray-700">
+            Cargando propiedad...
+          </p>
+          <p className="text-sm font-semibold text-gray-900">
+            {Math.round(progress)}%
+          </p>
+        </div>
+
+        <div className="h-3 w-full rounded-full bg-gray-200 overflow-hidden">
+          <div
+            className="h-full bg-blue-500 transition-all duration-200"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Preparando ficha
+        </p>
+      </div>
+    </div>
+  )
+}
 
   const quickFacts: Array<{
     label: string
