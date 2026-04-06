@@ -738,16 +738,19 @@ window.location.href = `mailto:${agent.email}`
                     {activeProperty.address || activeProperty.location}
                   </div>
 
-                  <div className="rounded-2xl overflow-hidden border bg-white">
-                    <div className="h-64 bg-gradient-to-br from-slate-100 via-white to-slate-200 flex items-center justify-center relative">
-                      <div className="text-center">
-                        <MapPin className="w-10 h-10 mx-auto text-red-500" />
-                        <p className="mt-2 text-sm text-gray-600">
-                          Mapa de ubicación
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  <div className="rounded-2xl overflow-hidden border bg-white h-64">
+  <iframe
+    width="100%"
+    height="100%"
+    style={{ border: 0 }}
+    loading="lazy"
+    allowFullScreen
+    referrerPolicy="no-referrer-when-downgrade"
+    src={`https://www.google.com/maps?q=${encodeURIComponent(
+      activeProperty.address || activeProperty.location
+    )}&output=embed`}
+  />
+</div>
                 </CardContent>
               </Card>
             </section>
