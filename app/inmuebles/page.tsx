@@ -288,6 +288,3 @@ export default function InmueblesPage() {
   )
 }
 
-export default function Loading() {
-  return null
-}
