@@ -63,6 +63,7 @@ function getVisitorId() {
 
   return id
 }
+
 function formatPrice(value: any) {
   const num = Number(value)
   if (!Number.isFinite(num) || num <= 0) return null
@@ -97,6 +98,9 @@ export default function PropertyPage() {
   const [sent, setSent] = useState(false)
   const [selectedImage, setSelectedImage] = useState("")
   const [showFullDescription, setShowFullDescription] = useState(false)
+
+  const [pageLoading, setPageLoading] = useState(true)
+  const [progress, setProgress] = useState(0)
 
   const demoProperty = {
     title: "Alquiler Cordón 1 dorm balcón garage a estrenar",
@@ -145,130 +149,130 @@ export default function PropertyPage() {
       "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
     ],
     agent: {
-  name: "Rodrigo de la Boya",
-  role: "Asesor inmobiliario",
-  photo: "https://randomuser.me/api/portraits/women/44.jpg",
-  phone: "59895083633",
-  email: "rbarbosa@casadata.uy",
-},
+      name: "Rodrigo de la Boya",
+      role: "Asesor inmobiliario",
+      photo: "https://randomuser.me/api/portraits/women/44.jpg",
+      phone: "59895083633",
+      email: "rbarbosa@casadata.uy",
+    },
   }
-  
 
   const gallery: string[] = Array.from(
-  new Set(
-    [
-      property?.image,
-      ...(Array.isArray(property?.images) ? property.images : []),
-      ...(demoProperty.images || []),
-    ].filter(Boolean)
+    new Set(
+      [
+        property?.image,
+        ...(Array.isArray(property?.images) ? property.images : []),
+        ...(demoProperty.images || []),
+      ].filter(Boolean)
+    )
   )
-)
 
   const priceFormatted = formatPrice(
-  property?.price ?? demoProperty.price
-)
+    property?.price ?? demoProperty.price
+  )
 
   const highlights = toStringArray(
-  property?.highlights ||
-  property?.amenities ||
-  property?.features ||
-  demoProperty.highlights
-)
+    property?.highlights ||
+      property?.amenities ||
+      property?.features ||
+      demoProperty.highlights
+  )
 
-const services = toStringArray(
-  property?.services ||
-  property?.serviceList ||
-  demoProperty.services
-)
-const agent = {
-  name:
-    property?.agentName ||
-    property?.agent?.name ||
-    demoProperty.agent.name,
+  const services = toStringArray(
+    property?.services ||
+      property?.serviceList ||
+      demoProperty.services
+  )
 
-  role:
-    property?.agentRole ||
-    property?.agent?.role ||
-    demoProperty.agent.role,
+  const agent = {
+    name:
+      property?.agentName ||
+      property?.agent?.name ||
+      demoProperty.agent.name,
 
-  photo:
-    property?.agentPhoto ||
-    property?.agent?.photo ||
-    demoProperty.agent.photo,
+    role:
+      property?.agentRole ||
+      property?.agent?.role ||
+      demoProperty.agent.role,
 
-  phone:
-    property?.agentPhone ||
-    property?.agent?.phone ||
-    demoProperty.agent.phone,
+    photo:
+      property?.agentPhoto ||
+      property?.agent?.photo ||
+      demoProperty.agent.photo,
 
-  email:
-    property?.agentEmail ||
-    property?.agent?.email ||
-    demoProperty.agent.email,
-}
-const extras = toStringArray(
-  property?.extras ||
-  property?.detailsList ||
-  demoProperty.extras
-)
-const [pageLoading, setPageLoading] = useState(true)
-const [progress, setProgress] = useState(0)
-const [sending, setSending] = useState(false)
+    phone:
+      property?.agentPhone ||
+      property?.agent?.phone ||
+      demoProperty.agent.phone,
+
+    email:
+      property?.agentEmail ||
+      property?.agent?.email ||
+      demoProperty.agent.email,
+  }
+
+  const extras = toStringArray(
+    property?.extras ||
+      property?.detailsList ||
+      demoProperty.extras
+  )
+
   const activeProperty = property || demoProperty
   const activeGallery = gallery.length > 0 ? gallery : demoProperty.images
-useEffect(() => {
-  window.scrollTo(0, 0)
-}, [])
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   // =========================
   // LOAD PROPERTY
   // =========================
   useEffect(() => {
-  let mounted = true
+    let mounted = true
 
-  setPageLoading(true)
-  setProgress(0)
+    setPageLoading(true)
+    setProgress(0)
 
-  // simulación de progreso
-  const timer = setInterval(() => {
-    setProgress((p) => {
-      if (p >= 90) return p
-      if (p < 40) return p + 8
-      if (p < 70) return p + 4
-      return p + 2
-    })
-  }, 120)
+    const timer = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 90) return p
+        if (p < 40) return p + 8
+        if (p < 70) return p + 4
+        return p + 2
+      })
+    }, 120)
 
-  fetch(`${API_URL}/property/${propertyId}`)
-    .then((r) => {
-      if (!r.ok) throw new Error("Failed")
-      return r.json()
-    })
-    .then((data) => {
-      if (!mounted) return
-      setProperty(data)
-    })
-    .catch(() => {
-      if (!mounted) return
-      setProperty(demoProperty)
-    })
-    .finally(() => {
-      if (!mounted) return
-
-      setTimeout(() => {
-        setProgress(100)
+    fetch(`${API_URL}/property/${propertyId}`)
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed")
+        return r.json()
+      })
+      .then((data) => {
+        if (!mounted) return
+        setProperty(data)
+      })
+      .catch(() => {
+        if (!mounted) return
+        setProperty(demoProperty)
+      })
+      .finally(() => {
+        if (!mounted) return
 
         setTimeout(() => {
-          if (!mounted) return
-          setPageLoading(false)
-        }, 200)
-      }, 200)
-    })
+          setProgress(100)
 
-  return () => {
-    mounted = false
-    clearInterval(timer)
-  }
-}, [propertyId])
+          setTimeout(() => {
+            if (!mounted) return
+            setPageLoading(false)
+          }, 200)
+        }, 200)
+      })
+
+    return () => {
+      mounted = false
+      clearInterval(timer)
+    }
+  }, [propertyId])
 
   useEffect(() => {
     if (gallery.length > 0) {
@@ -284,7 +288,7 @@ useEffect(() => {
   useEffect(() => {
     if (!property) return
     const sessionId = getSessionId()
-const visitorId = getVisitorId()
+    const visitorId = getVisitorId()
     const key = `last_visit_${propertyId}_${sessionId}`
     const lastVisit = Number(localStorage.getItem(key) || 0)
 
@@ -296,7 +300,7 @@ const visitorId = getVisitorId()
         source:
           new URLSearchParams(window.location.search).get("src") || "web",
         sessionId,
-        visitorId, // ✅ nuevo
+        visitorId,
       })
     }
 
@@ -312,7 +316,7 @@ const visitorId = getVisitorId()
     if (!propertyId) return
 
     const sessionId = getSessionId()
-const visitorId = getVisitorId()
+    const visitorId = getVisitorId()
     let last = Date.now()
 
     const interval = setInterval(() => {
@@ -328,7 +332,7 @@ const visitorId = getVisitorId()
         propertyId,
         sessionId,
         timeSpent: delta,
-          visitorId, // ✅ nuevo
+        visitorId,
       })
     }, 5000)
 
@@ -342,7 +346,7 @@ const visitorId = getVisitorId()
     if (!propertyId) return
 
     const sessionId = getSessionId()
-const visitorId = getVisitorId()
+    const visitorId = getVisitorId()
     const sections = ["hero", "details", "location", "features", "contact"]
     const seen = new Set<string>()
 
@@ -361,38 +365,37 @@ const visitorId = getVisitorId()
       let changed = false
 
       sections.forEach((id) => {
-  const el = document.getElementById(id)
-  if (!el) return
+        const el = document.getElementById(id)
+        if (!el) return
 
-  const rect = el.getBoundingClientRect()
+        const rect = el.getBoundingClientRect()
 
-  // 🔥 NUEVO
-  if (rect.height === 0) return
+        if (rect.height === 0) return
 
-  const visiblePx =
-    Math.min(rect.bottom, window.innerHeight) -
-    Math.max(rect.top, 0)
+        const visiblePx =
+          Math.min(rect.bottom, window.innerHeight) -
+          Math.max(rect.top, 0)
 
-  const visibleRatio = visiblePx / rect.height
+        const visibleRatio = visiblePx / rect.height
 
-  if (visibleRatio > 0.4) {
-    if (!seen.has(id)) {
-      seen.add(id)
-      changed = true
-    }
-  }
-})
+        if (visibleRatio > 0.4) {
+          if (!seen.has(id)) {
+            seen.add(id)
+            changed = true
+          }
+        }
+      })
 
       if (changed) {
         clearTimeout(timeout)
         timeout = setTimeout(send, 800)
       }
     }
-    
-window.addEventListener("scroll", onScroll, { passive: true })
 
-// ✅ ejecutar UNA VEZ después de render real
-setTimeout(onScroll, 300)
+    window.addEventListener("scroll", onScroll, { passive: true })
+
+    setTimeout(onScroll, 300)
+
     return () => {
       window.removeEventListener("scroll", onScroll)
       clearTimeout(timeout)
@@ -406,7 +409,7 @@ setTimeout(onScroll, 300)
     sendData(`${API_URL}/track-reach`, {
       propertyId,
       sessionId: getSessionId(),
-      visitorId: getVisitorId(), // ✅ nuevo
+      visitorId: getVisitorId(),
       sections: ["contact"],
     })
   }
@@ -430,9 +433,9 @@ setTimeout(onScroll, 300)
         propertyId,
         type: "form",
         name: safeName,
-        contact: safeContact, // email o celular
+        contact: safeContact,
         sessionId: getSessionId(),
-        visitorId: getVisitorId(), // ✅ nuevo
+        visitorId: getVisitorId(),
       }),
     })
 
@@ -465,7 +468,6 @@ setTimeout(onScroll, 300)
   const handleEmail = async () => {
     if (!agent.email) return
 
-
     trackContact()
 
     await fetch(`${API_URL}/lead`, {
@@ -478,7 +480,8 @@ setTimeout(onScroll, 300)
         visitorId: getVisitorId(),
       }),
     })
-window.location.href = `mailto:${agent.email}`
+
+    window.location.href = `mailto:${agent.email}`
   }
 
   const copyPropertyLink = async () => {
@@ -491,33 +494,33 @@ window.location.href = `mailto:${agent.email}`
   // =========================
   // UI
   // =========================
-if (pageLoading) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6">
-      <div className="w-full max-w-md space-y-4">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-gray-700">
-            Cargando propiedad...
-          </p>
-          <p className="text-sm font-semibold text-gray-900">
-            {Math.round(progress)}%
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6">
+        <div className="w-full max-w-md space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700">
+              Cargando propiedad...
+            </p>
+            <p className="text-sm font-semibold text-gray-900">
+              {Math.round(progress)}%
+            </p>
+          </div>
+
+          <div className="h-3 w-full rounded-full bg-gray-200 overflow-hidden">
+            <div
+              className="h-full bg-blue-500 transition-all duration-200"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Preparando ficha
           </p>
         </div>
-
-        <div className="h-3 w-full rounded-full bg-gray-200 overflow-hidden">
-          <div
-            className="h-full bg-blue-500 transition-all duration-200"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <p className="text-xs text-muted-foreground">
-          Preparando ficha
-        </p>
       </div>
-    </div>
-  )
-}
+    )
+  }
 
   const quickFacts: Array<{
     label: string
@@ -803,18 +806,18 @@ if (pageLoading) {
                   </div>
 
                   <div className="rounded-2xl overflow-hidden border bg-white h-64">
-  <iframe
-    width="100%"
-    height="100%"
-    style={{ border: 0 }}
-    loading="lazy"
-    allowFullScreen
-    referrerPolicy="no-referrer-when-downgrade"
-    src={`https://www.google.com/maps?q=${encodeURIComponent(
-      activeProperty.address || activeProperty.location
-    )}&output=embed`}
-  />
-</div>
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={`https://www.google.com/maps?q=${encodeURIComponent(
+                        activeProperty.address || activeProperty.location
+                      )}&output=embed`}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             </section>
@@ -951,83 +954,81 @@ if (pageLoading) {
                 <CardTitle>Contacto</CardTitle>
               </CardHeader>
 
-          <CardContent className="space-y-3">
+              <CardContent className="space-y-3">
+                {agent.phone && (
+                  <>
+                    {/* AGENTE */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <img
+                        src={agent.photo}
+                        className="w-12 h-12 rounded-full object-cover border"
+                      />
+                      <div>
+                        <p className="font-medium text-gray-900">{agent.name}</p>
+                        <p className="text-sm text-gray-500">{agent.role}</p>
+                        <p className="text-xs text-green-600 font-medium">
+                          ● Responde en minutos
+                        </p>
+                      </div>
+                    </div>
 
-  {agent.phone && (
-    <>
-      {/* AGENTE */}
-      <div className="flex items-center gap-3 mb-4">
-        <img
-          src={agent.photo}
-          className="w-12 h-12 rounded-full object-cover border"
-        />
-        <div>
-          <p className="font-medium text-gray-900">{agent.name}</p>
-          <p className="text-sm text-gray-500">{agent.role}</p>
-          <p className="text-xs text-green-600 font-medium">
-            ● Responde en minutos
-          </p>
-        </div>
-      </div>
+                    {/* WHATSAPP */}
+                    <Button
+                      onClick={handleWhatsApp}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-base font-medium"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      WhatsApp
+                    </Button>
 
-      {/* WHATSAPP */}
-      <Button
-        onClick={handleWhatsApp}
-        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-base font-medium"
-      >
-        <MessageCircle className="w-4 h-4 mr-2" />
-        WhatsApp
-      </Button>
+                    {/* LLAMAR */}
+                    <Button
+                      onClick={() => {
+                        const phone = normalizePhone(agent.phone)
+                        window.location.href = `tel:${phone}`
+                      }}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <Phone className="w-4 h-4 mr-2" />
+                      Llamar
+                    </Button>
+                  </>
+                )}
 
-      {/* LLAMAR */}
-      <Button
-        onClick={() => {
-          const phone = normalizePhone(agent.phone)
-          window.location.href = `tel:${phone}`
-        }}
-        variant="outline"
-        className="w-full"
-      >
-        <Phone className="w-4 h-4 mr-2" />
-        Llamar
-      </Button>
-    </>
-  )}
+                {agent.email && (
+                  <Button
+                    onClick={handleEmail}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Email
+                  </Button>
+                )}
 
-  {agent.email && (
-    <Button
-      onClick={handleEmail}
-      variant="outline"
-      className="w-full"
-    >
-      <Mail className="w-4 h-4 mr-2" />
-      Email
-    </Button>
-  )}
+                <Button
+                  onClick={() => setShowModal(true)}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white"
+                >
+                  Dejar datos
+                </Button>
 
-  <Button
-    onClick={() => setShowModal(true)}
-    className="w-full bg-slate-900 hover:bg-slate-800 text-white"
-  >
-    Dejar datos
-  </Button>
+                <button
+                  onClick={copyPropertyLink}
+                  className="w-full text-sm text-gray-600 hover:text-black inline-flex items-center justify-center gap-2 py-2"
+                >
+                  <Copy className="w-4 h-4" />
+                  {copied ? "Enlace copiado" : "Copiar enlace"}
+                </button>
 
-  <button
-    onClick={copyPropertyLink}
-    className="w-full text-sm text-gray-600 hover:text-black inline-flex items-center justify-center gap-2 py-2"
-  >
-    <Copy className="w-4 h-4" />
-    {copied ? "Enlace copiado" : "Copiar enlace"}
-  </button>
-
-  <div className="rounded-xl bg-slate-50 border p-4 text-sm text-slate-700">
-    <p className="font-medium text-slate-900">Respuesta rápida</p>
-    <p className="mt-1">
-      Dejá tu email o celular y te contactamos. El mismo input acepta cualquiera de los dos.
-    </p>
-  </div>
-
-</CardContent>
+                <div className="rounded-xl bg-slate-50 border p-4 text-sm text-slate-700">
+                  <p className="font-medium text-slate-900">Respuesta rápida</p>
+                  <p className="mt-1">
+                    Dejá tu email o celular y te contactamos. El mismo input acepta cualquiera de los dos.
+                  </p>
+                </div>
+              </CardContent>
             </Card>
 
             <Card className="shadow-sm">
@@ -1079,16 +1080,16 @@ if (pageLoading) {
 
       {/* MOBILE STICKY BAR */}
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-white shadow-lg p-3 flex gap-2 lg:hidden">
-        {agent.phone&& (
+        {agent.phone && (
           <button
-        onClick={handleWhatsApp}
+            onClick={handleWhatsApp}
             className="flex-1 rounded-xl bg-green-600 text-white py-3 text-sm font-medium"
           >
             WhatsApp
           </button>
         )}
 
-        {agent.phone&& (
+        {agent.phone && (
           <button
             onClick={() => {
               const phone = normalizePhone(agent.phone)
