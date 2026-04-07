@@ -187,14 +187,13 @@ const contactIntentSessions = new Set(
 
       const lastVisit = sessionVisits[sessionVisits.length - 1]
 
-      const relatedLead =
-        leads.find((l: any) => l.sessionId === sessionId) ||
-        leads
-          .filter((l: any) => l && l.createdAt)
-          .sort(
-            (a: any, b: any) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )[0]
+      const relatedLead = leads
+  .filter((l: any) => l.sessionId === sessionId)
+  .sort(
+    (a: any, b: any) =>
+      new Date(b.createdAt).getTime() -
+      new Date(a.createdAt).getTime()
+  )[0] || null
 
       return {
   sessionId,
@@ -525,15 +524,14 @@ const retention = prev ? (current / prev) * 100 : 100
                       {new Date(lead.lastContactAt).toLocaleString()}
                     </p>
                   )}
-                 {lead.lastContactAt && (
-  <p className="text-xs text-green-600">
-    Último contacto:{" "}
-    {new Date(lead.lastContactAt).toLocaleString()}
-  </p>
-)}
+    
 
 {/* 🔥 INTENTO / CONTACTO */}
-{lead.hasIntent ? (
+{lead.contact ? (
+  <p className="text-xs text-green-700">
+    Contacto: {lead.contact}
+  </p>
+) : lead.hasIntent ? (
   <p className="text-xs text-green-700">
     Intentó contacto{" "}
     {lead.leadType === "whatsapp"
@@ -541,10 +539,6 @@ const retention = prev ? (current / prev) * 100 : 100
       : lead.leadType === "form"
       ? "por formulario"
       : ""}
-  </p>
-) : lead.contact ? (
-  <p className="text-xs text-green-700">
-    Contacto: {lead.contact}
   </p>
 ) : null}
 
