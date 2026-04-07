@@ -398,9 +398,15 @@ if (leads.length === 0 && totalVisitsReal > 30) {
         <p className="text-3xl font-bold">
   {safeNumber(intensityReal).toFixed(2)}{" "}
   {intensityReal > 1.5 ? "🔥" : intensityReal < 0.5 ? "⚠️" : ""}
+          <p className="text-xs text-gray-500 mt-1">
+  Promedio de revisitas por usuario. Indica nivel de interés real.
+</p>
 </p>
       </div>
  {/* PERFORMANCE DE FICHA */}
+      <h3 className="text-sm text-gray-500 mb-2">
+  Performance de la ficha
+</h3>
 <div className="grid md:grid-cols-3 gap-4">
   
   <Stat
