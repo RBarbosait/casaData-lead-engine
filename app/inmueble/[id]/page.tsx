@@ -167,9 +167,7 @@ export default function PropertyPage() {
     )
   )
 
-  const priceFormatted = formatPrice(
-    property?.price ?? demoProperty.price
-  )
+  const priceFormatted = formatPrice(property?.price ?? demoProperty.price)
 
   const highlights = toStringArray(
     property?.highlights ||
@@ -578,7 +576,7 @@ export default function PropertyPage() {
       <div className="border-b bg-white/90 backdrop-blur sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push("/inmuebles")}
             className="inline-flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-black"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -595,7 +593,7 @@ export default function PropertyPage() {
         </div>
       </div>
 
-      <main className="max-w-6xl mx-auto px-4 py-6 md:py-8 pb-24">
+      <main className="max-w-6xl mx-auto px-4 py-6 md:py-8 pb-36 lg:pb-24">
         <div className="grid lg:grid-cols-[minmax(0,1.55fr)_380px] gap-8 items-start">
           {/* LEFT */}
           <div className="space-y-6">
@@ -1079,7 +1077,10 @@ export default function PropertyPage() {
       </main>
 
       {/* MOBILE STICKY BAR */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-white shadow-lg p-3 flex gap-2 lg:hidden">
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white shadow-lg p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] flex gap-2 lg:hidden"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+      >
         {agent.phone && (
           <button
             onClick={handleWhatsApp}
