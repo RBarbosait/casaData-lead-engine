@@ -377,42 +377,44 @@ if (leads.length === 0 && totalVisitsReal > 30) {
     Nivel de interés general basado en comportamiento real de los usuarios
   </p>
 </div>
+        </div> // 👈 cerrar HEADER
+{/* STATUS */}
+<div className="grid md:grid-cols-2 gap-6">
+  <div className="p-6 border bg-white rounded-xl">
+    <p className="text-sm mb-2">Estado</p>
+    <h2 className={`font-bold ${safeStatus}`}>
+      {statusLabel[insights?.status] || "Nuevo"}
+    </h2>
 
-      {/* STATUS */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="p-6 border bg-white rounded-xl">
-  <p className="text-sm mb-2">Estado</p>
-  <h2 className={`font-bold ${safeStatus}`}>{statusLabel[insights?.status] || "Nuevo"}</h2>
+    <p className="text-xs text-gray-500 mt-2">
+      Clasificación automática según el nivel de demanda detectado
+    </p>
+  </div>
 
-  <p className="text-xs text-gray-500 mt-2">
-    Clasificación automática según el nivel de demanda detectado
-  </p>
+  <div className="p-6 border bg-white rounded-xl">
+    <p className="text-sm mb-2">Score</p>
+    <h2 className="text-3xl font-bold">
+      {safeNumber(insights?.score)}/100
+    </h2>
+
+    <p className="text-xs text-gray-500 mt-2">
+      Evaluación global de rendimiento de la publicación
+    </p>
+  </div>
 </div>
-        {  /*Score*/}
-      <div className="p-6 border bg-white rounded-xl">
-  <p className="text-sm mb-2">Score</p>
-  <h2 className="text-3xl font-bold">
-    {safeNumber(insights?.score)}/100
-  </h2>
+     
 
-  <p className="text-xs text-gray-500 mt-2">
-    Evaluación global de rendimiento de la publicación
-  </p>
-</div>
-      </div>
-
-      {/* METRICS */}
-        {/* METRICS */}
-<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-   <h3 className="text-sm text-gray-500 mb-2">
+{/* METRICS */}
+<h3 className="text-sm text-gray-500 mb-2">
   Comportamiento de usuarios
 </h3>
-        <Stat label="Visitas" value={totalVisitsReal} />
-        <Stat label="Usuarios únicos" value={uniqueUsersReal} />
-        <Stat label="Usuarios que vuelven" value={usersWhoRevisit} />
-        <Stat label="Revisitas" value={revisitsReal} />
-      </div>
 
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  <Stat label="Visitas" value={totalVisitsReal} />
+  <Stat label="Usuarios únicos" value={uniqueUsersReal} />
+  <Stat label="Usuarios que vuelven" value={usersWhoRevisit} />
+  <Stat label="Revisitas" value={revisitsReal} />
+</div>
       {/* INTENSIDAD */}
       <div className="p-6 border bg-white rounded-xl">
   <h3 className="text-sm text-gray-500 mb-2">
