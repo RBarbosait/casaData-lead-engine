@@ -402,7 +402,11 @@ if (leads.length === 0 && totalVisitsReal > 30) {
       </div>
 
       {/* METRICS */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* METRICS */}
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+   <h3 className="text-sm text-gray-500 mb-2">
+  Comportamiento de usuarios
+</h3>
         <Stat label="Visitas" value={totalVisitsReal} />
         <Stat label="Usuarios únicos" value={uniqueUsersReal} />
         <Stat label="Usuarios que vuelven" value={usersWhoRevisit} />
@@ -411,16 +415,18 @@ if (leads.length === 0 && totalVisitsReal > 30) {
 
       {/* INTENSIDAD */}
       <div className="p-6 border bg-white rounded-xl">
-  <h3>Intensidad</h3>
+  <h3 className="text-sm text-gray-500 mb-2">
+  Interés del usuario
+</h3>
 
   <p className="text-3xl font-bold">
     {safeNumber(intensityReal).toFixed(2)}{" "}
     {intensityReal > 1.5 ? "🔥" : intensityReal < 0.5 ? "⚠️" : ""}
   </p>
 
-  <p className="text-xs text-gray-500 mt-1">
-    Promedio de revisitas por usuario. Indica nivel de interés real.
-  </p>
+ <p className="text-xs text-gray-500 mt-1">
+  Cuántas veces un usuario vuelve a ver la propiedad (mide interés real)
+</p>
 </div>
     
  {/* PERFORMANCE DE FICHA */}
@@ -476,7 +482,11 @@ if (leads.length === 0 && totalVisitsReal > 30) {
   value={`${reachContactRate.toFixed(0)}%`}
   description="Usuarios que llegan a la sección de contacto"
 />
-  <Stat label="Usuarios altamente interesados" value={highIntentUsers.length} />
+<Stat
+  label="Usuarios altamente interesados"
+  value={highIntentUsers.length}
+  description="Usuarios con señales fuertes (mucho tiempo o interacción con contacto)"
+/>
 </div>
       {/* ORIGEN */}
       <div className="p-6 border bg-white rounded-xl space-y-4">
@@ -528,7 +538,7 @@ const retention = prev ? (current / prev) * 100 : 100
 
       {/* HOT LEADS */}
       <div className="p-6 border bg-white rounded-xl">
-        <h3 className="font-semibold mb-4">🔥 Alta intención detectada</h3>
+        <h3 className="font-semibold mb-4">🔥 Usuarios con alto interés</h3>
 
         {hotLeads.length === 0 ? (
           <p className="text-sm text-muted-foreground">
@@ -548,7 +558,7 @@ const retention = prev ? (current / prev) * 100 : 100
 }`}
               >
                 <div>
-                  <p className="font-medium">🔥 Usuario altamente interesado</p>
+                  <p className="font-medium">🔥 Usuario activo</p>
                   <p className="text-sm text-muted-foreground">
                     {lead.count} visitas
                   </p>
@@ -591,7 +601,7 @@ const retention = prev ? (current / prev) * 100 : 100
 {/* ⚠️ INTENTÓ PERO NO CONVIRTIÓ */}
 {lead.hasIntent && !lead.contact && (
   <p className="text-xs text-yellow-600">
-    ⚠️ No dejó datos de contacto
+    ⚠️ Mostró interés pero no dejó contacto
   </p>
 )}
 
