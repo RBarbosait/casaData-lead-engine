@@ -55,17 +55,20 @@ export default function LeadCard({ lead }: any) {
     if (!rawContact) return
     await navigator.clipboard.writeText(rawContact)
   }
-
+    const isHot = lead.type === "whatsapp"
   return (
+
     <>
       {/* CARD */}
       <div
   onClick={() => setOpen(true)}
   className={`p-4 border rounded-xl flex justify-between items-center cursor-pointer transition ${
-    isNew
-      ? "bg-green-50 border-green-400"
-      : "bg-white hover:bg-gray-50"
-  }`}
+  isHot
+    ? "bg-orange-50 border-orange-400"
+    : isNew
+    ? "bg-green-50 border-green-400"
+    : "bg-white hover:bg-gray-50"
+}`}
 >
   <div className="space-y-1">
     
