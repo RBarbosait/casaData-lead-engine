@@ -377,7 +377,7 @@ if (leads.length === 0 && totalVisitsReal > 30) {
     Nivel de interés general basado en comportamiento real de los usuarios
   </p>
 </div>
-        </div> // 👈 cerrar HEADER
+        </div>
 {/* STATUS */}
 <div className="grid md:grid-cols-2 gap-6">
   <div className="p-6 border bg-white rounded-xl">
