@@ -396,55 +396,36 @@ if (leads.length === 0 && totalVisitsReal > 30) {
       <div className="p-6 border bg-white rounded-xl">
         <h3>Intensidad</h3>
         <p className="text-3xl font-bold">
-          {safeNumber(intensityReal).toFixed(2)}
-        </p>
+  {safeNumber(intensityReal).toFixed(2)}{" "}
+  {intensityReal > 1.5 ? "🔥" : intensityReal < 0.5 ? "⚠️" : ""}
+</p>
       </div>
-      {/* PERFORMANCE DE FICHA */}
+ {/* PERFORMANCE DE FICHA */}
 <div className="grid md:grid-cols-3 gap-4">
+  
   <Stat
     label="Tiempo a primer lead"
     value={
-  timeToFirstLead
-    ? formatTime(timeToFirstLead / 1000)
-    : "-"
-}
+      timeToFirstLead
+        ? formatTime(timeToFirstLead / 1000)
+        : "-"
+    }
   />
 
   <Stat
     label="Eficiencia de intención"
-    value={`${safeNumber(intentEfficiency).toFixed(0)}%`}
+    value={`${safeNumber(intentEfficiency).toFixed(0)}% ${
+      intentEfficiency < 30 ? "⚠️" : intentEfficiency > 50 ? "🔥" : ""
+    }`}
   />
 
   <Stat
     label="Conversión"
-    value={`${safeNumber(conversionRate).toFixed(0)}%`}
+    value={`${safeNumber(conversionRate).toFixed(0)}% ${
+      conversionRate < 3 ? "⚠️" : conversionRate > 10 ? "🔥" : ""
+    }`}
   />
-</div>
-{/* INSIGHTS */}
-<div className="p-6 border bg-white rounded-xl">
-  <h3 className="font-semibold mb-4">Insights</h3>
 
-  {insightsList.length === 0 ? (
-    <p className="text-sm text-muted-foreground">
-      Aún no hay suficientes datos
-    </p>
-  ) : (
-    <div className="space-y-3">
-  {insightsList.slice(0, 3).map((insight, i) => (
-    <div key={i}>
-      <p className="text-sm font-medium text-gray-800">
-        🔥 {insight.text}
-      </p>
-
-      {insight.action && (
-        <p className="text-xs text-gray-500">
-          → {insight.action}
-        </p>
-      )}
-    </div>
-  ))}
-</div>
-  )}
 </div>
       {/* BEHAVIOR */}
      
