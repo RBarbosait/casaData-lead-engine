@@ -334,6 +334,16 @@ if (leads.length === 0 && totalVisitsReal > 30) {
 
   return (
     <div className="p-8 space-y-8 bg-gray-50 min-h-screen max-w-5xl mx-auto">
+      {hotLeads.length > 0 && (
+  <div className="p-4 rounded-xl border bg-white">
+    <p className="text-sm font-medium">
+      🔥 {hotLeads.filter((l:any)=>l.contact).length} listos para contactar
+    </p>
+    <p className="text-xs text-gray-500">
+      ⚠️ {hotLeads.filter((l:any)=>l.hasIntent && !l.contact).length} intentaron sin dejar datos
+    </p>
+  </div>
+)}
       {/* HEADER */}
       <div>
         <h1 className="text-3xl font-bold">{property.title}</h1>
@@ -499,7 +509,13 @@ const retention = prev ? (current / prev) * 100 : 100
             {hotLeads.map((lead: any) => (
               <div
                 key={lead.sessionId}
-                className="p-4 border rounded-lg flex justify-between"
+                className={`p-4 border rounded-lg flex justify-between ${
+  lead.contact
+    ? "border-green-400 bg-green-50"
+    : lead.hasIntent
+    ? "border-yellow-400 bg-yellow-50"
+    : ""
+}`}
               >
                 <div>
                   <p className="font-medium">🔥 Usuario altamente interesado</p>
