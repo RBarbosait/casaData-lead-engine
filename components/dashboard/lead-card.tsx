@@ -60,78 +60,61 @@ export default function LeadCard({ lead }: any) {
 
     <>
       {/* CARD */}
-      <div
+ 
+    <div
   onClick={() => setOpen(true)}
   className={`p-4 border rounded-xl flex justify-between items-center cursor-pointer transition ${
-  isHot
-    ? "bg-orange-50 border-orange-400"
-    : isNew
-    ? "bg-green-50 border-green-400"
-    : "bg-white hover:bg-gray-50"
-}`}
+    isHot
+      ? "border-orange-400 bg-orange-50"
+      : isNew
+      ? "border-green-400 bg-green-50"
+      : "bg-white hover:bg-gray-50"
+  }`}
 >
-  <div className="space-y-1">
+  {/* LEFT */}
+  <div className="min-w-0">
     
-    {/* TOP */}
-    <div className="flex items-center gap-2">
-      <p className="font-medium">
+    {/* TOP ROW */}
+    <div className="flex items-center gap-2 mb-1">
+      <span className="text-sm font-medium text-gray-900">
         {lead.type === "whatsapp" ? "WhatsApp" : "Formulario"}
-      </p>
-
-      <span
-        className={`text-xs px-2 py-1 rounded ${
-          isNew
-            ? "bg-green-200 text-green-800"
-            : "bg-gray-200 text-gray-600"
-        }`}
-      >
-        {isNew ? "Nuevo" : "Visto"}
       </span>
 
-      {/* 🔥 NUEVO: intención */}
-      {lead.sessionId && (
-        <span className="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700">
-          Alta intención
+      {isNew && (
+        <span className="text-[10px] px-2 py-0.5 rounded bg-green-200 text-green-800">
+          Nuevo
+        </span>
+      )}
+
+      {isHot && (
+        <span className="text-[10px] px-2 py-0.5 rounded bg-orange-200 text-orange-800">
+          🔥
         </span>
       )}
     </div>
 
-    {/* NOMBRE */}
-    {lead.name && (
-      <p className="text-sm font-medium">{lead.name}</p>
-    )}
+    {/* CONTACT (principal) */}
+    <p className="text-sm text-gray-800 truncate">
+      {isEmail
+        ? rawContact
+        : rawContact.replace(/\d(?=\d{2})/g, "*")}
+    </p>
 
-    {/* CONTACTO */}
-    {lead.contact && (
-      <p className="text-sm text-gray-600 truncate max-w-[200px]">
-        {lead.contact}
-      </p>
-    )}
-
-    {/* SESSION */}
-    {lead.sessionId && (
-      <p className="text-xs text-gray-400">
-        session: {lead.sessionId.slice(0, 6)}...
-      </p>
-    )}
-  </div>
-
-  {/* RIGHT SIDE */}
-  <div className="text-right space-y-2">
-
-    {/* ⏱ tiempo relativo */}
+    {/* META */}
     <p className="text-xs text-gray-400">
       {formatRelativeTime(createdAt)}
     </p>
+  </div>
 
-    {/* ⚡ acción rápida */}
+  {/* ACTION */}
+  <div className="flex-shrink-0">
     {isPhone && (
       <button
         onClick={(e) => {
           e.stopPropagation()
           openWhatsApp()
         }}
-        className="text-xs bg-green-600 text-white px-3 py-1 rounded"
+        className="text-xs bg-green-600 text-white px-3 py-1.5 rounded"
       >
         WhatsApp
       </button>
@@ -143,13 +126,17 @@ export default function LeadCard({ lead }: any) {
           e.stopPropagation()
           sendEmail()
         }}
-        className="text-xs bg-purple-600 text-white px-3 py-1 rounded"
+        className="text-xs bg-gray-900 text-white px-3 py-1.5 rounded"
       >
         Email
       </button>
     )}
   </div>
 </div>
+    
+
+    
+
 
       {/* MODAL */}
       {open && (
