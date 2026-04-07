@@ -1,6 +1,12 @@
 export const runtime = "edge"
 export const dynamic = "force-dynamic"
 
+function formatTime(seconds: number | null) {
+  if (!seconds) return "-"
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${m}m ${s}s`
+}
 import LeadCard from "@/components/dashboard/lead-card"
 import { getInsights } from "@/lib/analytics"
 import QRCard from "@/components/dashboard/qr-card"
@@ -398,10 +404,10 @@ if (leads.length === 0 && totalVisitsReal > 30) {
   <Stat
     label="Tiempo a primer lead"
     value={
-      timeToFirstLead
-        ? `${(timeToFirstLead / 1000).toFixed(0)}s`
-        : "-"
-    }
+  timeToFirstLead
+    ? formatTime(timeToFirstLead / 1000)
+    : "-"
+}
   />
 
   <Stat
