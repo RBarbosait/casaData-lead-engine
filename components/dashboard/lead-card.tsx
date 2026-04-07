@@ -3,6 +3,15 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
+function formatRelativeTime(date: Date) {
+  const diff = (Date.now() - date.getTime()) / 1000
+
+  if (diff < 60) return "ahora"
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h`
+
+  return `${Math.floor(diff / 86400)}d`
+}
 export default function LeadCard({ lead }: any) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
@@ -51,51 +60,93 @@ export default function LeadCard({ lead }: any) {
     <>
       {/* CARD */}
       <div
-        onClick={() => setOpen(true)}
-        className={`p-4 border rounded-lg flex justify-between cursor-pointer transition ${
+  onClick={() => setOpen(true)}
+  className={`p-4 border rounded-xl flex justify-between items-center cursor-pointer transition ${
+    isNew
+      ? "bg-green-50 border-green-400"
+      : "bg-white hover:bg-gray-50"
+  }`}
+>
+  <div className="space-y-1">
+    
+    {/* TOP */}
+    <div className="flex items-center gap-2">
+      <p className="font-medium">
+        {lead.type === "whatsapp" ? "WhatsApp" : "Formulario"}
+      </p>
+
+      <span
+        className={`text-xs px-2 py-1 rounded ${
           isNew
-            ? "bg-green-50 border-green-300"
-            : "bg-white hover:bg-gray-50"
+            ? "bg-green-200 text-green-800"
+            : "bg-gray-200 text-gray-600"
         }`}
       >
-        <div>
-          <div className="flex items-center gap-2">
-            <p className="font-medium">
-              {lead.type === "whatsapp" ? "WhatsApp" : "Formulario"}
-            </p>
+        {isNew ? "Nuevo" : "Visto"}
+      </span>
 
-            <span
-              className={`text-xs px-2 py-1 rounded ${
-                isNew
-                  ? "bg-green-200 text-green-800"
-                  : "bg-gray-200 text-gray-600"
-              }`}
-            >
-              {isNew ? "Nuevo" : "Visto"}
-            </span>
-          </div>
+      {/* 🔥 NUEVO: intención */}
+      {lead.sessionId && (
+        <span className="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700">
+          Alta intención
+        </span>
+      )}
+    </div>
 
-          {lead.name && (
-            <p className="text-sm font-medium mt-1">{lead.name}</p>
-          )}
+    {/* NOMBRE */}
+    {lead.name && (
+      <p className="text-sm font-medium">{lead.name}</p>
+    )}
 
-          {lead.contact && (
-            <p className="text-sm text-muted-foreground">
-              {lead.contact}
-            </p>
-          )}
+    {/* CONTACTO */}
+    {lead.contact && (
+      <p className="text-sm text-gray-600 truncate max-w-[200px]">
+        {lead.contact}
+      </p>
+    )}
 
-          {lead.sessionId && (
-            <p className="text-xs text-gray-400">
-              session: {lead.sessionId.slice(0, 8)}...
-            </p>
-          )}
-        </div>
+    {/* SESSION */}
+    {lead.sessionId && (
+      <p className="text-xs text-gray-400">
+        session: {lead.sessionId.slice(0, 6)}...
+      </p>
+    )}
+  </div>
 
-        <div className="text-xs text-muted-foreground">
-          {createdAt.toLocaleString()}
-        </div>
-      </div>
+  {/* RIGHT SIDE */}
+  <div className="text-right space-y-2">
+
+    {/* ⏱ tiempo relativo */}
+    <p className="text-xs text-gray-400">
+      {formatRelativeTime(createdAt)}
+    </p>
+
+    {/* ⚡ acción rápida */}
+    {isPhone && (
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          openWhatsApp()
+        }}
+        className="text-xs bg-green-600 text-white px-3 py-1 rounded"
+      >
+        WhatsApp
+      </button>
+    )}
+
+    {isEmail && (
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          sendEmail()
+        }}
+        className="text-xs bg-purple-600 text-white px-3 py-1 rounded"
+      >
+        Email
+      </button>
+    )}
+  </div>
+</div>
 
       {/* MODAL */}
       {open && (
