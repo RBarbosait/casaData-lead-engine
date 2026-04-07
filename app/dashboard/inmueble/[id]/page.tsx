@@ -1,6 +1,12 @@
 export const runtime = "edge"
 export const dynamic = "force-dynamic"
 
+const statusLabel: Record<string, string> = {
+  alta_demanda: "Alta demanda",
+  interes_activo: "Interés activo",
+  baja_demanda: "Baja demanda",
+  nuevo: "Nuevo",
+}
 function formatTime(seconds: number | null) {
   if (!seconds) return "-"
   const m = Math.floor(seconds / 60)
@@ -362,26 +368,37 @@ if (leads.length === 0 && totalVisitsReal > 30) {
         />
 
         <div className="p-6 mt-6 rounded-xl border bg-white">
-          <p className="text-sm mb-2">Índice de intención</p>
-          <h2 className="text-4xl font-bold">
-            {safeNumber(intentionScore)}/100
-          </h2>
-        </div>
-      </div>
+  <p className="text-sm mb-2">Índice de intención</p>
+  <h2 className="text-4xl font-bold">
+    {safeNumber(intentionScore)}/100
+  </h2>
+
+  <p className="text-xs text-gray-500 mt-2">
+    Nivel de interés general basado en comportamiento real de los usuarios
+  </p>
+</div>
 
       {/* STATUS */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="p-6 border bg-white rounded-xl">
-          <p className="text-sm mb-2">Estado</p>
-          <h2 className={`font-bold ${safeStatus}`}>{safeStatusText}</h2>
-        </div>
+  <p className="text-sm mb-2">Estado</p>
+  <h2 className={`font-bold ${safeStatus}`}>{statusLabel[insights?.status] || "Nuevo"}</h2>
 
-        <div className="p-6 border bg-white rounded-xl">
-          <p className="text-sm mb-2">Score</p>
-          <h2 className="text-3xl font-bold">
-            {safeNumber(insights?.score)}/100
-          </h2>
-        </div>
+  <p className="text-xs text-gray-500 mt-2">
+    Clasificación automática según el nivel de demanda detectado
+  </p>
+</div>
+        {  /*Score*/}
+      <div className="p-6 border bg-white rounded-xl">
+  <p className="text-sm mb-2">Score</p>
+  <h2 className="text-3xl font-bold">
+    {safeNumber(insights?.score)}/100
+  </h2>
+
+  <p className="text-xs text-gray-500 mt-2">
+    Evaluación global de rendimiento de la publicación
+  </p>
+</div>
       </div>
 
       {/* METRICS */}
@@ -394,15 +411,18 @@ if (leads.length === 0 && totalVisitsReal > 30) {
 
       {/* INTENSIDAD */}
       <div className="p-6 border bg-white rounded-xl">
-        <h3>Intensidad</h3>
-        <p className="text-3xl font-bold">
-  {safeNumber(intensityReal).toFixed(2)}{" "}
-  {intensityReal > 1.5 ? "🔥" : intensityReal < 0.5 ? "⚠️" : ""}
-          <p className="text-xs text-gray-500 mt-1">
-  Promedio de revisitas por usuario. Indica nivel de interés real.
-</p>
-</p>
-      </div>
+  <h3>Intensidad</h3>
+
+  <p className="text-3xl font-bold">
+    {safeNumber(intensityReal).toFixed(2)}{" "}
+    {intensityReal > 1.5 ? "🔥" : intensityReal < 0.5 ? "⚠️" : ""}
+  </p>
+
+  <p className="text-xs text-gray-500 mt-1">
+    Promedio de revisitas por usuario. Indica nivel de interés real.
+  </p>
+</div>
+    
  {/* PERFORMANCE DE FICHA */}
       <h3 className="text-sm text-gray-500 mb-2">
   Performance de la ficha
@@ -410,35 +430,52 @@ if (leads.length === 0 && totalVisitsReal > 30) {
 <div className="grid md:grid-cols-3 gap-4">
   
   <Stat
-    label="Tiempo a primer lead"
-    value={
-      timeToFirstLead
-        ? formatTime(timeToFirstLead / 1000)
-        : "-"
-    }
-  />
+  label="Tiempo a primer lead"
+  value={
+    timeToFirstLead
+      ? formatTime(timeToFirstLead / 1000)
+      : "-"
+  }
+  description="Tiempo desde la primera visita hasta el primer contacto"
+/>
+
+<Stat
+  label="Eficiencia de intención"
+  value={`${safeNumber(intentEfficiency).toFixed(0)}% ${
+    intentEfficiency < 30 ? "⚠️" : intentEfficiency > 50 ? "🔥" : ""
+  }`}
+  description="Qué porcentaje de usuarios interesados termina contactando"
+/>
 
   <Stat
-    label="Eficiencia de intención"
-    value={`${safeNumber(intentEfficiency).toFixed(0)}% ${
-      intentEfficiency < 30 ? "⚠️" : intentEfficiency > 50 ? "🔥" : ""
-    }`}
-  />
-
-  <Stat
-    label="Conversión"
-    value={`${safeNumber(conversionRate).toFixed(0)}% ${
-      conversionRate < 3 ? "⚠️" : conversionRate > 10 ? "🔥" : ""
-    }`}
-  />
+  label="Conversión"
+  value={`${safeNumber(conversionRate).toFixed(0)}% ${
+    conversionRate < 3 ? "⚠️" : conversionRate > 10 ? "🔥" : ""
+  }`}
+  description="Porcentaje de visitantes que dejan sus datos"
+/>
 
 </div>
       {/* BEHAVIOR */}
      
 <div className="grid md:grid-cols-4 gap-4">
-  <Stat label="Tiempo promedio en ficha" value={`${(avgTime / 1000).toFixed(1)}s`} />
-  <Stat label="Profundidad de navegación" value={avgReach.toFixed(1)} />
-  <Stat label="Tasa de contacto" value={`${reachContactRate.toFixed(0)}%`} />
+  <Stat
+  label="Tiempo promedio en ficha"
+  value={`${(avgTime / 1000).toFixed(1)}s`}
+  description="Cuánto tiempo pasan los usuarios en la propiedad"
+/>
+
+<Stat
+  label="Profundidad de navegación"
+  value={avgReach.toFixed(1)}
+  description="Cantidad de secciones que recorren en promedio"
+/>
+
+<Stat
+  label="Tasa de contacto"
+  value={`${reachContactRate.toFixed(0)}%`}
+  description="Usuarios que llegan a la sección de contacto"
+/>
   <Stat label="Usuarios altamente interesados" value={highIntentUsers.length} />
 </div>
       {/* ORIGEN */}
@@ -597,7 +634,7 @@ const retention = prev ? (current / prev) * 100 : 100
   )
 }
 
-function Stat({ label, value }: any) {
+function Stat({ label, value, description }: any) {
   const displayValue =
     value === null || value === undefined
       ? 0
@@ -609,8 +646,14 @@ function Stat({ label, value }: any) {
 
   return (
     <div className="p-4 border bg-white rounded-xl">
-      <p>{label}</p>
+      <p className="text-sm text-gray-500">{label}</p>
       <p className="text-xl font-bold">{displayValue}</p>
+
+      {description && (
+        <p className="text-xs text-gray-500 mt-1">
+          {description}
+        </p>
+      )}
     </div>
   )
 }
