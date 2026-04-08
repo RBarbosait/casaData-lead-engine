@@ -18,7 +18,7 @@ import {
 const API_URL = "https://casadata-api-production.up.railway.app"
 
 // 🔥 CONFIG CLOUDINARY
-const CLOUD_NAME = "TU_CLOUD_NAME"
+const CLOUD_NAME = "dvlfzrpeq"
 const UPLOAD_PRESET = "casadata"
 
 interface User {
