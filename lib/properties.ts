@@ -194,7 +194,7 @@ export const deleteUserProperty = (id: number): boolean => {
   return true
 }
 
-export const incrementPropertyViews = (id: number): void => {
+export const incrementPropertyViews = (id: string): void => {
   const userProperties = getUserProperties()
   const propertyIndex = userProperties.findIndex((p) => p.id === id)
 
