@@ -98,9 +98,42 @@ const defaultProperties: Property[] = [
 ]
 
 // Property management functions
-export const getAllProperties = (): Property[] => {
-  const userProperties = getUserProperties()
-  return [...defaultProperties, ...userProperties]
+export const getAllProperties = async (): Promise<Property[]> => {
+  try {
+    const res = await fetch(
+      "https://casadata-api-production.up.railway.app/property"
+    )
+
+    const data = await res.json()
+
+    const apiProperties: Property[] = data.map((p: any) => ({
+      id: p.id, // ⚠️ string pero lo usamos igual
+      title: p.title || "Propiedad",
+      type: "Propiedad",
+      address: p.location || "",
+      operation: p.operationType || "Venta",
+      image: p.image || "/placeholder.svg",
+      contact: p.agentPhone || "",
+      hasStreetView: false,
+      description: p.description || "",
+      features: Array.isArray(p.features) ? p.features : [],
+      agent: p.agentName || "",
+      agentPhone: p.agentPhone || "",
+      status: p.status || "active",
+      views: 0,
+      createdAt: p.createdAt || new Date().toISOString(),
+      isUserGenerated: true,
+    }))
+
+    const userProperties = getUserProperties()
+
+    return [...apiProperties, ...userProperties]
+  } catch (error) {
+    console.error("Error loading API properties:", error)
+
+    const userProperties = getUserProperties()
+    return [...defaultProperties, ...userProperties]
+  }
 }
 
 export const getPropertyById = (id: number): Property | undefined => {
