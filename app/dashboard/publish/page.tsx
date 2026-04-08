@@ -92,20 +92,32 @@ export default function PublishPage() {
   // CLOUDINARY UPLOAD
   // =========================
   const uploadImage = async (file: File) => {
-    const formData = new FormData()
-    formData.append("file", file)
-    formData.append("upload_preset", UPLOAD_PRESET)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("upload_preset", UPLOAD_PRESET)
 
-    const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-      {
-        method: "POST",
-        body: formData,
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      )
+
+      const data = await res.json()
+
+      console.log("🔥 CLOUDINARY:", data)
+
+      if (!data.secure_url) {
+        throw new Error("Cloudinary upload failed")
       }
-    )
 
-    const data = await res.json()
-    return data.secure_url
+      return data.secure_url
+    } catch (err) {
+      console.error("❌ Upload error:", err)
+      return null
+    }
   }
 
   // =========================
@@ -118,56 +130,79 @@ export default function PublishPage() {
     setIsLoading(true)
 
     try {
-      // 🔥 subir todas las imágenes
-      const uploadedImages = await Promise.all(
+      console.log("🚀 START SUBMIT")
+
+      // 🔥 subir imágenes
+      const uploadedImagesRaw = await Promise.all(
         files.map((file) => uploadImage(file))
       )
+
+      const uploadedImages = uploadedImagesRaw.filter(Boolean) as string[]
+
+      console.log("📸 IMAGES:", uploadedImages)
 
       const mainImage =
         uploadedImages[0] ||
         "https://images.unsplash.com/photo-1560185007-cde436f6a4d0"
+
+      // 🔥 REQUEST
+      const payload = {
+        title: formData.title,
+        address: formData.address,
+        description: formData.description,
+
+        image: mainImage,
+        images: uploadedImages,
+
+        operationType: formData.operation,
+        price: Number(formData.price) || null,
+        bedrooms: Number(formData.bedrooms) || null,
+        bathrooms: Number(formData.bathrooms) || null,
+        area: Number(formData.area) || null,
+
+        features: formData.features
+          .split(",")
+          .map((f) => f.trim())
+          .filter(Boolean),
+
+        agentName: user.name,
+        agentPhone: formData.contact,
+
+        source: "user",
+        status: "active",
+      }
+
+      console.log("📦 PAYLOAD:", payload)
 
       const res = await fetch(`${API_URL}/property`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          title: formData.title,
-          address: formData.address,
-          description: formData.description,
-
-          // 🔥 IMAGES
-          image: mainImage,
-          images: uploadedImages,
-
-          operationType: formData.operation,
-          price: Number(formData.price) || null,
-          bedrooms: Number(formData.bedrooms) || null,
-          bathrooms: Number(formData.bathrooms) || null,
-          area: Number(formData.area) || null,
-
-          features: formData.features
-            .split(",")
-            .map((f) => f.trim())
-            .filter(Boolean),
-
-          agentName: user.name,
-          agentPhone: formData.contact,
-
-          source: "user",
-          status: "active",
-        }),
+        body: JSON.stringify(payload),
       })
 
-      if (!res.ok) throw new Error("Error")
+      console.log("📡 RESPONSE STATUS:", res.status)
+
+      if (!res.ok) {
+        const text = await res.text()
+        console.error("❌ BACKEND ERROR:", text)
+        throw new Error("Backend error")
+      }
 
       const newProperty = await res.json()
+
+      console.log("✅ CREATED PROPERTY:", newProperty)
+
+      if (!newProperty?.id) {
+        throw new Error("No ID returned")
+      }
 
       router.push(`/inmueble/${newProperty.id}`)
 
     } catch (err) {
-      console.error(err)
+      console.error("❌ SUBMIT ERROR:", err)
+      alert("Error al publicar. Revisá consola.")
     } finally {
       setIsLoading(false)
     }
@@ -296,7 +331,7 @@ export default function PublishPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Subiendo imágenes..." : "Publicar"}
+                {isLoading ? "Publicando..." : "Publicar"}
               </Button>
 
             </form>
