@@ -135,8 +135,8 @@ export default function InmueblesPage() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    setProperties(getAllProperties())
-  }, [])
+  getAllProperties().then(setProperties)
+}, [])
 
   useEffect(() => {
     const scrollTo = searchParams.get("scrollTo")
