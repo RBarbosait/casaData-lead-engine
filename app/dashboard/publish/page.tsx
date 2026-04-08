@@ -1,79 +1,85 @@
 "use client"
+
 import { useState, useEffect, useRef } from "react"
 import type React from "react"
 
-import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, Upload, Gift, CreditCard, CheckCircle, X, ImageIcon } from "lucide-react"
-import { saveUserProperty } from "@/lib/properties"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
+
+const API_URL = "https://casadata-api-production.up.railway.app"
 
 interface User {
   email: string
   name: string
+  phone?: string
   freePublicationUsed: boolean
   subscriptionType: string | null
 }
 
 export default function PublishPage() {
   const [user, setUser] = useState<User | null>(null)
+
   const [formData, setFormData] = useState({
     title: "",
-    type: "",
     address: "",
     description: "",
     contact: "",
     operation: "Venta",
+    price: "",
+    bedrooms: "",
+    bathrooms: "",
+    area: "",
     features: "",
-    agent: "",
-    agentPhone: "",
   })
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [isDragOver, setIsDragOver] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-  const searchParams = useSearchParams()
-
+  // =========================
+  // USER LOAD
+  // =========================
   useEffect(() => {
     const userData = localStorage.getItem("casadata_user")
+
     if (!userData) {
       router.push("/auth/login")
       return
     }
-    const parsedUser = JSON.parse(userData)
-    setUser(parsedUser)
 
-    setFormData((prev) => ({
-      ...prev,
-      agent: parsedUser.name,
-      agentPhone: parsedUser.phone || "",
-    }))
+    const parsed = JSON.parse(userData)
+    setUser(parsed)
   }, [router])
 
-  const handleImageSelect = (file: File) => {
-    if (file && file.type.startsWith("image/")) {
-      setSelectedImage(file)
+  // =========================
+  // IMAGE
+  // =========================
+  const handleImage = (file: File) => {
+    if (!file.type.startsWith("image/")) return
 
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string)
-      }
-      reader.readAsDataURL(file)
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string)
     }
+    reader.readAsDataURL(file)
   }
 
+  // =========================
+  // SUBMIT (🔥 FIX REAL)
+  // =========================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!user) return
 
     const canPublishFree = !user.freePublicationUsed
@@ -87,88 +93,181 @@ export default function PublishPage() {
     setIsLoading(true)
 
     try {
-      const imageUrl = imagePreview || "/modern-property-exterior.png"
+      const res = await fetch(`${API_URL}/property`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          // 🔥 CORE
+          title: formData.title,
+          address: formData.address,
+          description: formData.description,
+          image:
+            imagePreview ||
+            "https://images.unsplash.com/photo-1560185007-cde436f6a4d0",
 
-      const newProperty = saveUserProperty({
-        title: formData.title,
-        type: formData.type,
-        address: formData.address,
-        operation: formData.operation,
-        image: imageUrl,
-        contact: formData.contact,
-        hasStreetView: false,
-        description: formData.description,
-        features: formData.features
-          .split(",")
-          .map((f) => f.trim())
-          .filter((f) => f),
-        agent: formData.agent || user.name,
-        agentPhone: formData.agentPhone || formData.contact,
-        status: "active",
+          // 🔥 FICHA COMPATIBLE
+          operationType: formData.operation,
+          price: Number(formData.price) || null,
+          bedrooms: Number(formData.bedrooms) || null,
+          bathrooms: Number(formData.bathrooms) || null,
+          area: Number(formData.area) || null,
+
+          // 🔥 ARRAYS (tu ficha usa esto)
+          features: formData.features
+            .split(",")
+            .map((f) => f.trim())
+            .filter(Boolean),
+
+          // 🔥 AGENTE (CLAVE)
+          agentName: user.name,
+          agentPhone: formData.contact,
+
+          // 🔥 SISTEMA
+          source: "user",
+          status: "active",
+        }),
       })
 
-      const updatedUser = { ...user }
+      if (!res.ok) throw new Error("Error creando propiedad")
 
+      const newProperty = await res.json()
+
+      // marcar free usado
+      const updatedUser = { ...user }
       if (!user.freePublicationUsed) {
         updatedUser.freePublicationUsed = true
       }
 
       localStorage.setItem("casadata_user", JSON.stringify(updatedUser))
 
-      setIsLoading(false)
-      router.push(`/dashboard?published=${newProperty.id}`)
-    } catch (error) {
-      console.error("Error saving property:", error)
+      // 👉 REDIRECT A FICHA REAL
+      router.push(`/inmueble/${newProperty.id}`)
+
+    } catch (err) {
+      console.error("Error:", err)
+    } finally {
       setIsLoading(false)
     }
   }
 
   if (!user) {
-    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Cargando...
+      </div>
+    )
   }
-
-  const canPublishFree = !user.freePublicationUsed
-  const hasSubscription = user.subscriptionType
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto p-8">
+      <div className="max-w-2xl mx-auto p-6">
         <Card>
           <CardHeader>
-            <CardTitle>Nueva Publicación</CardTitle>
-            <CardDescription>Completa la información</CardDescription>
+            <CardTitle>Nueva propiedad</CardTitle>
+            <CardDescription>
+              Publicá y medí interés real
+            </CardDescription>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
 
               <Input
                 placeholder="Título"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 required
               />
 
               <Input
                 placeholder="Dirección"
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
                 required
               />
+
+              <Input
+                placeholder="Precio"
+                value={formData.price}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: e.target.value })
+                }
+              />
+
+              <div className="grid grid-cols-3 gap-2">
+                <Input
+                  placeholder="Dormitorios"
+                  value={formData.bedrooms}
+                  onChange={(e) =>
+                    setFormData({ ...formData, bedrooms: e.target.value })
+                  }
+                />
+                <Input
+                  placeholder="Baños"
+                  value={formData.bathrooms}
+                  onChange={(e) =>
+                    setFormData({ ...formData, bathrooms: e.target.value })
+                  }
+                />
+                <Input
+                  placeholder="m²"
+                  value={formData.area}
+                  onChange={(e) =>
+                    setFormData({ ...formData, area: e.target.value })
+                  }
+                />
+              </div>
 
               <Textarea
                 placeholder="Descripción"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
               />
 
               <Input
-                placeholder="Teléfono"
+                placeholder="Características (coma separadas)"
+                value={formData.features}
+                onChange={(e) =>
+                  setFormData({ ...formData, features: e.target.value })
+                }
+              />
+
+              <Input
+                placeholder="Teléfono o WhatsApp"
                 value={formData.contact}
-                onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, contact: e.target.value })
+                }
                 required
               />
 
-              <Button type="submit" disabled={isLoading}>
+              {/* IMAGE */}
+              <div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={(e) =>
+                    e.target.files && handleImage(e.target.files[0])
+                  }
+                />
+
+                {imagePreview && (
+                  <img
+                    src={imagePreview}
+                    className="mt-3 rounded-xl h-40 object-cover"
+                  />
+                )}
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Publicando..." : "Publicar"}
               </Button>
 
