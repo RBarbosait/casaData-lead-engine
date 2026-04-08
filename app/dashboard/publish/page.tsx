@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from "react"
 import type React from "react"
-
 import { useRouter } from "next/navigation"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -16,6 +16,10 @@ import {
 } from "@/components/ui/card"
 
 const API_URL = "https://casadata-api-production.up.railway.app"
+
+// 🔥 CONFIG CLOUDINARY
+const CLOUD_NAME = "TU_CLOUD_NAME"
+const UPLOAD_PRESET = "casadata"
 
 interface User {
   email: string
@@ -41,14 +45,15 @@ export default function PublishPage() {
     features: "",
   })
 
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [files, setFiles] = useState<File[]>([])
+  const [previews, setPreviews] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // =========================
-  // USER LOAD
+  // USER
   // =========================
   useEffect(() => {
     const userData = localStorage.getItem("casadata_user")
@@ -58,116 +63,127 @@ export default function PublishPage() {
       return
     }
 
-    const parsed = JSON.parse(userData)
-    setUser(parsed)
+    setUser(JSON.parse(userData))
   }, [router])
 
   // =========================
-  // IMAGE
+  // IMAGE SELECT (MULTI)
   // =========================
-  const handleImage = (file: File) => {
-    if (!file.type.startsWith("image/")) return
+  const handleImages = (selectedFiles: FileList) => {
+    const newFiles = Array.from(selectedFiles).filter((f) =>
+      f.type.startsWith("image/")
+    )
 
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      setImagePreview(e.target?.result as string)
-    }
-    reader.readAsDataURL(file)
+    setFiles((prev) => [...prev, ...newFiles])
+
+    const newPreviews = newFiles.map((file) =>
+      URL.createObjectURL(file)
+    )
+
+    setPreviews((prev) => [...prev, ...newPreviews])
+  }
+
+  const removeImage = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index))
+    setPreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
   // =========================
-  // SUBMIT (🔥 FIX REAL)
+  // CLOUDINARY UPLOAD
+  // =========================
+  const uploadImage = async (file: File) => {
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("upload_preset", UPLOAD_PRESET)
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    )
+
+    const data = await res.json()
+    return data.secure_url
+  }
+
+  // =========================
+  // SUBMIT
   // =========================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
 
-    const canPublishFree = !user.freePublicationUsed
-    const hasSubscription = user.subscriptionType
-
-    if (!canPublishFree && !hasSubscription) {
-      router.push("/dashboard/payment")
-      return
-    }
-
     setIsLoading(true)
 
     try {
+      // 🔥 subir todas las imágenes
+      const uploadedImages = await Promise.all(
+        files.map((file) => uploadImage(file))
+      )
+
+      const mainImage =
+        uploadedImages[0] ||
+        "https://images.unsplash.com/photo-1560185007-cde436f6a4d0"
+
       const res = await fetch(`${API_URL}/property`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          // 🔥 CORE
           title: formData.title,
           address: formData.address,
           description: formData.description,
-          image:
-            imagePreview ||
-            "https://images.unsplash.com/photo-1560185007-cde436f6a4d0",
 
-          // 🔥 FICHA COMPATIBLE
+          // 🔥 IMAGES
+          image: mainImage,
+          images: uploadedImages,
+
           operationType: formData.operation,
           price: Number(formData.price) || null,
           bedrooms: Number(formData.bedrooms) || null,
           bathrooms: Number(formData.bathrooms) || null,
           area: Number(formData.area) || null,
 
-          // 🔥 ARRAYS (tu ficha usa esto)
           features: formData.features
             .split(",")
             .map((f) => f.trim())
             .filter(Boolean),
 
-          // 🔥 AGENTE (CLAVE)
           agentName: user.name,
           agentPhone: formData.contact,
 
-          // 🔥 SISTEMA
           source: "user",
           status: "active",
         }),
       })
 
-      if (!res.ok) throw new Error("Error creando propiedad")
+      if (!res.ok) throw new Error("Error")
 
       const newProperty = await res.json()
 
-      // marcar free usado
-      const updatedUser = { ...user }
-      if (!user.freePublicationUsed) {
-        updatedUser.freePublicationUsed = true
-      }
-
-      localStorage.setItem("casadata_user", JSON.stringify(updatedUser))
-
-      // 👉 REDIRECT A FICHA REAL
       router.push(`/inmueble/${newProperty.id}`)
 
     } catch (err) {
-      console.error("Error:", err)
+      console.error(err)
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Cargando...
-      </div>
-    )
-  }
+  if (!user) return null
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto p-6">
+
         <Card>
           <CardHeader>
             <CardTitle>Nueva propiedad</CardTitle>
             <CardDescription>
-              Publicá y medí interés real
+              Publicá con imágenes reales 🚀
             </CardDescription>
           </CardHeader>
 
@@ -249,31 +265,44 @@ export default function PublishPage() {
                 required
               />
 
-              {/* IMAGE */}
+              {/* 🔥 MULTI IMAGE */}
               <div>
                 <input
                   type="file"
+                  multiple
                   ref={fileInputRef}
                   onChange={(e) =>
-                    e.target.files && handleImage(e.target.files[0])
+                    e.target.files && handleImages(e.target.files)
                   }
                 />
 
-                {imagePreview && (
-                  <img
-                    src={imagePreview}
-                    className="mt-3 rounded-xl h-40 object-cover"
-                  />
-                )}
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  {previews.map((src, i) => (
+                    <div key={i} className="relative">
+                      <img
+                        src={src}
+                        className="h-24 w-full object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(i)}
+                        className="absolute top-1 right-1 bg-black/70 text-white text-xs px-1 rounded"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Publicando..." : "Publicar"}
+                {isLoading ? "Subiendo imágenes..." : "Publicar"}
               </Button>
 
             </form>
           </CardContent>
         </Card>
+
       </div>
     </div>
   )
