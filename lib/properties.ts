@@ -21,7 +21,7 @@ export interface Property {
 // Mock properties (existing ones)
 const defaultProperties: Property[] = [
   {
-    id: 1,
+    id:"1",
     title: "Casa moderna en zona residencial",
     type: "Casa",
     address: "Av. 18 de Julio 1234, Montevideo",
@@ -40,7 +40,7 @@ const defaultProperties: Property[] = [
     isUserGenerated: false,
   },
   {
-    id: 2,
+    id: "2",
     title: "Apartamento con vista al mar",
     type: "Apartamento",
     address: "Pocitos, Montevideo",
@@ -59,7 +59,7 @@ const defaultProperties: Property[] = [
     isUserGenerated: false,
   },
   {
-    id: 3,
+    id: "3",
     title: "Local comercial en zona histórica",
     type: "Local Comercial",
     address: "Ciudad Vieja, Montevideo",
@@ -78,7 +78,7 @@ const defaultProperties: Property[] = [
     isUserGenerated: false,
   },
   {
-    id: 4,
+    id: "4",
     title: "Cochera cubierta con portero",
     type: "Cochera",
     address: "Cordón, Montevideo",
