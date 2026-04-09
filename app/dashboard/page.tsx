@@ -1,9 +1,19 @@
 "use client"
+
+export const runtime = "edge"
+export const dynamic = "force-dynamic"
+
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -36,9 +46,6 @@ export default function DashboardPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // =========================
-  // LOAD USER + DATA
-  // =========================
   useEffect(() => {
     const userData = localStorage.getItem("casadata_user")
 
@@ -50,23 +57,14 @@ export default function DashboardPage() {
     const parsedUser = JSON.parse(userData)
     setUser(parsedUser)
 
-    // 🔥 PROPERTIES (incluye visits + leads desde backend)
     fetch(`${API_URL}/property`)
       .then((r) => r.json())
-      .then((data) => {
-        setProperties(data)
-      })
+      .then((data) => setProperties(data))
 
-    // 🔥 INSIGHTS (opcional, lo dejamos para KPIs globales)
     fetch(`${API_URL}/insights`)
       .then((r) => r.json())
-      .then((data) => {
-        setInsights(data || {})
-      })
-      .catch(() => {
-        setInsights({})
-      })
-
+      .then((data) => setInsights(data || {}))
+      .catch(() => setInsights({}))
   }, [router])
 
   const handleLogout = () => {
@@ -91,11 +89,9 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       {/* HEADER */}
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-
           <Link href="/" className="flex items-center gap-2">
             <img src="/casadata-logo.png" className="w-8 h-8" />
             <span className="font-bold text-xl">casaData</span>
@@ -126,7 +122,6 @@ export default function DashboardPage() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-
         {/* ALERT */}
         {showPublishedAlert && (
           <Alert className="mb-6 border-green-200 bg-green-50">
@@ -138,7 +133,6 @@ export default function DashboardPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-
           {/* SIDEBAR */}
           <div>
             <Card>
@@ -147,7 +141,6 @@ export default function DashboardPage() {
               </CardHeader>
 
               <CardContent className="space-y-4">
-
                 {!user.freePublicationUsed && (
                   <div className="bg-emerald-50 border p-3 rounded-lg">
                     <Gift className="w-4 h-4 inline mr-2" />
@@ -168,14 +161,12 @@ export default function DashboardPage() {
                     Publicar
                   </Button>
                 </Link>
-
               </CardContent>
             </Card>
           </div>
 
           {/* MAIN */}
           <div className="lg:col-span-3 space-y-6">
-
             {/* KPI */}
             <div className="grid grid-cols-3 gap-4">
               <Card>
@@ -223,7 +214,6 @@ export default function DashboardPage() {
               </CardHeader>
 
               <CardContent>
-
                 {properties.length === 0 ? (
                   <div className="text-center py-12">
                     <Home className="w-12 h-12 mx-auto mb-4 text-gray-400" />
@@ -231,7 +221,6 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-
                     {properties.map((p) => (
                       <div
                         key={p.id}
@@ -280,27 +269,30 @@ export default function DashboardPage() {
                             onClick={async () => {
                               if (!confirm("¿Eliminar propiedad?")) return
 
-                              await fetch(`${API_URL}/property/${p.id}`, {
-                                method: "DELETE",
-                              })
+                              const res = await fetch(
+                                `${API_URL}/property/${p.id}`,
+                                { method: "DELETE" }
+                              )
+
+                              if (!res.ok) {
+                                alert("Error al eliminar")
+                                return
+                              }
 
                               setProperties((prev) =>
                                 prev.filter((x) => x.id !== p.id)
                               )
                             }}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4 text-red-500" />
                           </Button>
                         </div>
                       </div>
                     ))}
-
                   </div>
                 )}
-
               </CardContent>
             </Card>
-
           </div>
         </div>
       </div>
