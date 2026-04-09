@@ -16,89 +16,77 @@ export default function EditPropertyPage() {
   const [property, setProperty] = useState<any>(null)
   const [loading, setLoading] = useState(false)
 
-  // =========================
-  // LOAD PROPERTY
-  // =========================
   useEffect(() => {
     fetch(`${API_URL}/property/${id}`)
       .then((r) => r.json())
       .then((data) => setProperty(data))
   }, [id])
 
-  // =========================
-  // SAVE
-  // =========================
   const handleSave = async () => {
     setLoading(true)
 
     await fetch(`${API_URL}/property/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(property),
+      body: JSON.stringify({
+        title: property.title,
+        location: property.location,
+        price: property.price,
+        description: property.description,
+        image: property.image,
+        images: property.images,
+        features: property.features,
+        agentName: property.agentName,
+        agentPhone: property.agentPhone,
+        status: property.status,
+      }),
     })
 
     setLoading(false)
-
-    // 🔥 UX PRO
     router.push("/dashboard?updated=1")
   }
 
-  if (!property) {
-    return <div className="p-8">Cargando...</div>
-  }
+  if (!property) return <div className="p-8">Cargando...</div>
 
   return (
     <div className="max-w-xl mx-auto p-6 space-y-4">
       <h1 className="text-xl font-bold">Editar propiedad</h1>
 
-      <Input
-        value={property.title || ""}
-        onChange={(e) =>
-          setProperty({ ...property, title: e.target.value })
-        }
-        placeholder="Título"
-      />
+      <Input value={property.title || ""} onChange={(e) => setProperty({ ...property, title: e.target.value })} placeholder="Título" />
+
+      <Input value={property.location || ""} onChange={(e) => setProperty({ ...property, location: e.target.value })} placeholder="Ubicación" />
+
+      <Input value={property.price || ""} onChange={(e) => setProperty({ ...property, price: Number(e.target.value) })} placeholder="Precio" />
+
+      <Input value={property.description || ""} onChange={(e) => setProperty({ ...property, description: e.target.value })} placeholder="Descripción" />
+
+      <Input value={property.image || ""} onChange={(e) => setProperty({ ...property, image: e.target.value })} placeholder="Imagen principal URL" />
 
       <Input
-        value={property.location || ""}
-        onChange={(e) =>
-          setProperty({ ...property, location: e.target.value })
-        }
-        placeholder="Ubicación"
-      />
-
-      <Input
-        value={property.price || ""}
+        value={(property.images || []).join(",")}
         onChange={(e) =>
           setProperty({
             ...property,
-            price: Number(e.target.value),
+            images: e.target.value.split(","),
           })
         }
-        placeholder="Precio"
+        placeholder="Imágenes (coma separadas)"
       />
 
       <Input
-        value={property.agentName || ""}
+        value={(property.features || []).join(",")}
         onChange={(e) =>
           setProperty({
             ...property,
-            agentName: e.target.value,
+            features: e.target.value.split(","),
           })
         }
-        placeholder="Agente"
+        placeholder="Features (coma separadas)"
       />
 
-      <Input
-        value={property.agentPhone || ""}
-        onChange={(e) =>
-          setProperty({
-            ...property,
-            agentPhone: e.target.value,
-          })
-        }
-        placeholder="Teléfono"
-      />
+      <Input value={property.agentName || ""} onChange={(e) => setProperty({ ...property, agentName: e.target.value })} placeholder="Agente" />
+
+      <Input value={property.agentPhone || ""} onChange={(e) => setProperty({ ...property, agentPhone: e.target.value })} placeholder="Teléfono" />
 
       <Button onClick={handleSave} className="w-full">
         {loading ? "Guardando..." : "Guardar cambios"}
