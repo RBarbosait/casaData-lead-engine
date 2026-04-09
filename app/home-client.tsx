@@ -17,63 +17,76 @@ export default function HomePage() {
   }, [searchParams])
 
   return (
-    <div className="min-h-screen bg-[#0B0F14] text-white flex flex-col items-center p-4">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center p-4">
 
-      {/* NAV */}
-      <div className="absolute top-4 right-4 flex gap-2 animate-fade-in">
+      {/* NAV FIXED */}
+      <div className="w-full max-w-5xl flex flex-wrap items-center justify-end gap-2 mb-6">
         <Link href="/how-it-works">
-          <Button variant="ghost" size="sm">Cómo funciona</Button>
+          <Button variant="ghost" size="sm">
+            Cómo funciona
+          </Button>
         </Link>
+
         <Link href="/about">
-          <Button variant="ghost" size="sm">About</Button>
+          <Button variant="ghost" size="sm">
+            About
+          </Button>
         </Link>
+
         <Link href="/auth/login">
           <Button variant="outline" size="sm">
             Iniciar Sesión
           </Button>
         </Link>
+
         <Link href="/auth/register">
-          <Button size="sm">Registrarse</Button>
+          <Button size="sm">
+            Registrarse
+          </Button>
         </Link>
       </div>
 
-      <div className="max-w-md w-full text-center space-y-8 mt-20">
+      <div className="max-w-md w-full text-center space-y-8">
 
         {/* HERO */}
         <div className="space-y-4 animate-fade-up">
-          <img src="/casadata-logo.png" alt="casaData" className="w-16 h-16 mx-auto animate-scale-in" />
+          <img
+            src="/casadata-logo.png"
+            alt="casaData"
+            className="w-16 h-16 mx-auto animate-scale-in"
+          />
 
           <h1 className="text-3xl font-bold leading-tight">
             Entendé la demanda real de tu propiedad
           </h1>
 
-          <p className="text-gray-400">
+          <p className="text-muted-foreground">
             No solo visitas. casaData detecta intención, interés y probabilidad de contacto en tiempo real.
           </p>
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Dejá de adivinar. Tomá decisiones con datos reales.
           </p>
         </div>
 
-        {/* 🔥 MÉTRICAS VISUALES */}
+        {/* MÉTRICAS */}
         <div className="grid grid-cols-3 gap-3 animate-fade-up delay-100">
-          <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+          <div className="p-3 rounded-lg border bg-white">
             <p className="text-lg font-bold">+120%</p>
-            <p className="text-xs text-gray-500">más leads</p>
+            <p className="text-xs text-muted-foreground">más leads</p>
           </div>
-          <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+          <div className="p-3 rounded-lg border bg-white">
             <p className="text-lg font-bold">x2</p>
-            <p className="text-xs text-gray-500">revisitas</p>
+            <p className="text-xs text-muted-foreground">revisitas</p>
           </div>
-          <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+          <div className="p-3 rounded-lg border bg-white">
             <p className="text-lg font-bold">+35%</p>
-            <p className="text-xs text-gray-500">tiempo en ficha</p>
+            <p className="text-xs text-muted-foreground">tiempo en ficha</p>
           </div>
         </div>
 
         {/* IMAGE */}
-        <div className="rounded-xl overflow-hidden border border-white/10 animate-fade-up delay-200">
+        <div className="rounded-xl overflow-hidden border animate-fade-up delay-200">
           <img
             src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=1200&auto=format&fit=crop"
             alt="real estate"
@@ -91,15 +104,15 @@ export default function HomePage() {
           </Link>
 
           <Link href="/auth/register">
-            <Button className="w-full h-14 text-lg">
+            <Button variant="outline" className="w-full h-14 text-lg">
               🚀 Empezar a medir mi propiedad
             </Button>
           </Link>
         </div>
 
         {/* VALUE */}
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 animate-fade-up delay-400">
-          <p className="text-sm text-emerald-400 font-medium">
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 animate-fade-up delay-400">
+          <p className="text-sm text-emerald-700 font-medium">
             🎉 Primera publicación GRATIS para nuevos usuarios
           </p>
         </div>
@@ -110,17 +123,17 @@ export default function HomePage() {
             Cómo funciona
           </h2>
 
-          <div className="space-y-3 text-sm text-gray-400">
+          <div className="space-y-3 text-sm text-muted-foreground">
 
-            <div className="p-3 rounded-lg border border-white/10 bg-white/5">
+            <div className="p-3 rounded-lg border bg-white">
               1. Publicás tu propiedad en casaData
             </div>
 
-            <div className="p-3 rounded-lg border border-white/10 bg-white/5">
+            <div className="p-3 rounded-lg border bg-white">
               2. Detectamos comportamiento real (tiempo, scroll, revisitas)
             </div>
 
-            <div className="p-3 rounded-lg border border-white/10 bg-white/5">
+            <div className="p-3 rounded-lg border bg-white">
               3. Identificamos usuarios con alta intención de compra
             </div>
 
@@ -134,12 +147,12 @@ export default function HomePage() {
         </div>
 
         {/* FOOT */}
-        <p className="text-sm text-gray-500 animate-fade-in delay-500">
+        <p className="text-sm text-muted-foreground animate-fade-in delay-500">
           Escaneaste un código QR desde un cartel inmobiliario
         </p>
       </div>
 
-      {/* 🔥 ANIMATIONS */}
+      {/* ANIMATIONS */}
       <style jsx global>{`
         @keyframes fadeUp {
           from {
