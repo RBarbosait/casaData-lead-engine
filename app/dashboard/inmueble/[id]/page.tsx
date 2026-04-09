@@ -14,19 +14,11 @@ function formatTime(seconds: number | null) {
   return `${m}m ${s}s`
 }
 import LeadCard from "@/components/dashboard/lead-card"
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-  Legend,
-} from "recharts"
+
 import { getInsights } from "@/lib/analytics"
 import QRCard from "@/components/dashboard/qr-card"
 
+import ChartClient from "@/components/dashboard/chart-client"
 export default async function Page({ params }: { params: { id: string } }) {
   const res = await fetch(
     `https://casadata-api-production.up.railway.app/property/${params.id}?t=${Date.now()}`,
@@ -533,48 +525,8 @@ const chartData = Object.values(monthlyMap)
     Visitas, usuarios únicos y leads en el tiempo
   </p>
 
-  <div className="w-full h-64">
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={chartData}>
-        
-        <CartesianGrid strokeDasharray="3 3" />
-
-        <XAxis dataKey="month" />
-        <YAxis />
-
-        <Tooltip />
-        <Legend />
-
-        {/* VISITS */}
-        <Line
-          type="monotone"
-          dataKey="visits"
-          stroke="#3b82f6"
-          strokeWidth={3}
-          dot={{ r: 3 }}
-        />
-
-        {/* USERS */}
-        <Line
-          type="monotone"
-          dataKey="users"
-          stroke="#eab308"
-          strokeWidth={3}
-          dot={{ r: 3 }}
-        />
-
-        {/* LEADS */}
-        <Line
-          type="monotone"
-          dataKey="leads"
-          stroke="#22c55e"
-          strokeWidth={3}
-          dot={{ r: 3 }}
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  </div>
 </div>
+    <ChartClient data={chartData} />
       {/* 🔥 TIMELINE DE MEJORA */}
 <div className="p-6 border bg-white rounded-xl space-y-6">
   <h3 className="font-semibold">
