@@ -464,6 +464,80 @@ if (leads.length === 0 && totalVisitsReal > 30) {
 />
 
 </div>
+      {/* 📈 EVOLUCIÓN EN EL TIEMPO */}
+<div className="p-6 border bg-white rounded-xl space-y-4">
+  <h3 className="font-semibold">
+    Evolución de la demanda
+  </h3>
+
+  <p className="text-sm text-gray-500">
+    Visitas, usuarios únicos y leads en los últimos meses
+  </p>
+
+  {/* 🔥 CHART SIMULADO */}
+  <div className="h-48 flex items-end gap-2">
+
+    {[
+      { v: 20, u: 15, l: 2 },
+      { v: 25, u: 18, l: 3 },
+      { v: 30, u: 20, l: 4 },
+      { v: 45, u: 30, l: 6 },
+      { v: 60, u: 40, l: 9 },
+      { v: 55, u: 38, l: 8 },
+      { v: 70, u: 50, l: 12 },
+      { v: 90, u: 65, l: 18 },
+      { v: 110, u: 80, l: 25 },
+    ].map((m, i) => (
+      <div key={i} className="flex-1 flex flex-col items-center gap-1">
+        
+        {/* barras */}
+        <div className="w-full flex flex-col items-center justify-end h-full gap-[2px]">
+          
+          {/* leads */}
+          <div
+            className="w-full bg-green-500 rounded-sm"
+            style={{ height: `${m.l * 2}px` }}
+          />
+
+          {/* users */}
+          <div
+            className="w-full bg-yellow-500 rounded-sm"
+            style={{ height: `${m.u * 1.2}px` }}
+          />
+
+          {/* visits */}
+          <div
+            className="w-full bg-blue-500 rounded-sm"
+            style={{ height: `${m.v}px` }}
+          />
+        </div>
+
+        {/* label */}
+        <span className="text-[10px] text-gray-400">
+          M{i + 1}
+        </span>
+      </div>
+    ))}
+  </div>
+
+  {/* 🔥 LEYENDA */}
+  <div className="flex gap-4 text-xs text-gray-600">
+    <div className="flex items-center gap-1">
+      <div className="w-3 h-3 bg-blue-500 rounded-sm" />
+      Visitas
+    </div>
+
+    <div className="flex items-center gap-1">
+      <div className="w-3 h-3 bg-yellow-500 rounded-sm" />
+      Usuarios únicos
+    </div>
+
+    <div className="flex items-center gap-1">
+      <div className="w-3 h-3 bg-green-500 rounded-sm" />
+      Leads
+    </div>
+  </div>
+</div>
       {/* 🔥 TIMELINE DE MEJORA */}
 <div className="p-6 border bg-white rounded-xl space-y-6">
   <h3 className="font-semibold">
