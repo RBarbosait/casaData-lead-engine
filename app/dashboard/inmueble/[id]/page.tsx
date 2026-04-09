@@ -353,17 +353,54 @@ if (leads.length === 0 && totalVisitsReal > 30) {
   const total = insights?.totalVisits || 0
   const qrPercent = safeNumber(total ? (insights.qrVisits / total) * 100 : 0)
   const webPercent = safeNumber(total ? (insights.webVisits / total) * 100 : 0)
-  const chartData = [
-  { month: "M1", visits: 20, users: 15, leads: 2 },
-  { month: "M2", visits: 25, users: 18, leads: 3 },
-  { month: "M3", visits: 30, users: 22, leads: 4 },
-  { month: "M4", visits: 45, users: 30, leads: 6 },
-  { month: "M5", visits: 60, users: 40, leads: 9 },
-  { month: "M6", visits: 55, users: 38, leads: 8 },
-  { month: "M7", visits: 70, users: 50, leads: 12 },
-  { month: "M8", visits: 90, users: 65, leads: 18 },
-  { month: "M9", visits: 110, users: 80, leads: 25 },
-]
+  // 🔥 DATA REAL AGRUPADA POR MES
+const monthlyMap: Record<
+  string,
+  { visits: number; users: Set<string>; leads: number; date: Date }
+> = {}
+
+visits.forEach((v: any) => {
+  const date = new Date(v.createdAt)
+  const key = `${date.getFullYear()}-${date.getMonth()}`
+
+  if (!monthlyMap[key]) {
+    monthlyMap[key] = {
+      visits: 0,
+      users: new Set(),
+      leads: 0,
+      date,
+    }
+  }
+
+  monthlyMap[key].visits++
+  monthlyMap[key].users.add(v.visitorId || v.sessionId)
+})
+
+leads.forEach((l: any) => {
+  const date = new Date(l.createdAt)
+  const key = `${date.getFullYear()}-${date.getMonth()}`
+
+  if (!monthlyMap[key]) {
+    monthlyMap[key] = {
+      visits: 0,
+      users: new Set(),
+      leads: 0,
+      date,
+    }
+  }
+
+  monthlyMap[key].leads++
+})
+
+const chartData = Object.values(monthlyMap)
+  .sort((a, b) => a.date.getTime() - b.date.getTime())
+  .slice(-9) // 🔥 últimos 9 meses
+  .map((m) => ({
+    month: m.date.toLocaleString("es-UY", { month: "short" }),
+    visits: m.visits,
+    users: m.users.size,
+    leads: m.leads,
+  }))
 
   return (
     <div className="p-8 space-y-8 bg-gray-50 min-h-screen max-w-5xl mx-auto">
