@@ -47,97 +47,102 @@ export default function HomePage() {
   }
 
   return (
-  <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex flex-col items-center p-4">
 
-    {/* NAV */}
-    <div className="absolute top-4 right-4 flex gap-2">
-      <Link href="/how-it-works">
-        <Button variant="ghost" size="sm">Cómo funciona</Button>
-      </Link>
-      <Link href="/about">
-        <Button variant="ghost" size="sm">About</Button>
-      </Link>
-      <Link href="/auth/login">
-        <Button variant="outline" size="sm">Iniciar sesión</Button>
-      </Link>
-      <Link href="/auth/register">
-        <Button size="sm">Registrarse</Button>
-      </Link>
-    </div>
-
-    <div className="max-w-md mx-auto text-center space-y-10 pt-24 px-4">
-
-      {/* HERO */}
-      <div className="space-y-4">
-        <img src="/casadata-logo.png" className="w-16 h-16 mx-auto" />
-
-        <h1 className="text-4xl font-bold">
-          casaData
-        </h1>
-
-        <p className="text-gray-600 leading-relaxed">
-          Detecta quién está realmente interesado en tus propiedades.
-          <br />
-          <span className="font-medium text-gray-900">
-            No más visitas vacías.
-          </span>
-        </p>
-      </div>
-
-      {/* CTA */}
-      <div className="space-y-3">
-        <Link href="/inmuebles">
-          <Button className="w-full h-14 text-lg bg-black hover:bg-black/90">
-            <List className="w-5 h-5 mr-2" />
-            Ver propiedades
+      {/* 🔥 NAV EXTRA (nuevo) */}
+      <div className="absolute top-4 right-4 flex gap-2">
+        <Link href="/how-it-works">
+          <Button variant="ghost" size="sm">Cómo funciona</Button>
+        </Link>
+        <Link href="/about">
+          <Button variant="ghost" size="sm">About</Button>
+        </Link>
+        <Link href="/auth/login">
+          <Button variant="outline" size="sm">
+            Iniciar Sesión
           </Button>
         </Link>
-
         <Link href="/auth/register">
-          <Button variant="outline" className="w-full h-14 text-lg">
-            📝 Publicar propiedad
-          </Button>
+          <Button size="sm">Registrarse</Button>
         </Link>
       </div>
 
-      {/* VALUE */}
-      <div className="bg-black text-white rounded-xl p-5 space-y-2">
-        <p className="text-sm opacity-80">
-          🚀 Primera publicación gratis
-        </p>
-        <p className="text-sm font-medium">
-          Mide visitas, intención y contactos en tiempo real
-        </p>
-      </div>
+      <div className="max-w-md w-full text-center space-y-8 mt-20">
 
-      {/* 🔥 HOW IT WORKS MINI */}
-      <div className="text-left space-y-4 pt-6">
-        <h2 className="text-lg font-semibold text-center">
-          Cómo funciona
-        </h2>
+        {/* HERO */}
+        <div className="space-y-4">
+          <div className="mb-4">
+            <img src="/casadata-logo.png" alt="casaData" className="w-16 h-16 mx-auto" />
+          </div>
 
-        <div className="space-y-3 text-sm text-gray-600">
-          <div className="p-3 rounded-lg border bg-white">
-            1. Publicás tu propiedad
-          </div>
-          <div className="p-3 rounded-lg border bg-white">
-            2. Compartís el QR
-          </div>
-          <div className="p-3 rounded-lg border bg-white">
-            3. Ves quién realmente está interesado
-          </div>
+          <h1 className="text-3xl font-bold text-foreground">
+            casaData
+          </h1>
+
+          {/* 🔥 mejora sin romper tu texto */}
+          <p className="text-muted-foreground text-balance">
+            Explora casas, apartamentos, cocheras, negocios y espacios de almacenamiento.
+          </p>
+
+          {/* 🔥 agregado SaaS */}
+          <p className="text-sm text-gray-600">
+            Además, detecta quién está realmente interesado en cada propiedad.
+          </p>
         </div>
 
-        <Link href="/how-it-works">
-          <Button variant="ghost" className="w-full">
-            Ver más →
-          </Button>
-        </Link>
-      </div>
+        {/* CTA */}
+        <div className="space-y-4">
+          <Link href="/inmuebles">
+            <Button className="w-full h-14 text-lg" size="lg">
+              <List className="w-5 h-5 mr-2" />
+              Ver todos los inmuebles
+            </Button>
+          </Link>
 
-      <p className="text-xs text-gray-500">
-        Escaneaste un QR desde un cartel inmobiliario
-      </p>
+          <Link href="/auth/register">
+            <Button variant="outline" className="w-full h-14 text-lg bg-transparent" size="lg">
+              📝 Publicar mi propiedad
+            </Button>
+          </Link>
+        </div>
+
+        {/* VALUE */}
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+          <p className="text-sm text-emerald-800 font-medium">
+            🎉 Primera publicación GRATIS para nuevos usuarios
+          </p>
+        </div>
+
+        {/* 🔥 NUEVA SECCIÓN (clave SaaS) */}
+        <div className="pt-6 space-y-4 text-left">
+          <h2 className="text-center font-semibold text-lg">
+            Cómo funciona
+          </h2>
+
+          <div className="space-y-3 text-sm text-gray-600">
+            <div className="p-3 rounded-lg border bg-white">
+              1. Publicás tu propiedad
+            </div>
+            <div className="p-3 rounded-lg border bg-white">
+              2. Compartís el QR en carteles o redes
+            </div>
+            <div className="p-3 rounded-lg border bg-white">
+              3. Medís visitas, interés y contactos reales
+            </div>
+          </div>
+
+          <Link href="/how-it-works">
+            <Button variant="ghost" className="w-full">
+              Ver más →
+            </Button>
+          </Link>
+        </div>
+
+        {/* FOOT */}
+        <p className="text-sm text-muted-foreground">
+          Escaneaste un código QR desde un cartel inmobiliario
+        </p>
+      </div>
     </div>
-  </div>
-)
+  )
+}
