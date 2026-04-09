@@ -242,51 +242,58 @@ export default function DashboardPage() {
                           </Badge>
                         </div>
 
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() =>
-                              router.push(`/inmueble/${p.id}`)
-                            }
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
+                      <div className="flex gap-2">
+  {/* VER PUBLICO */}
+  <Button
+    size="sm"
+    variant="ghost"
+    onClick={() => router.push(`/inmueble/${p.id}`)}
+  >
+    <Eye className="w-4 h-4" />
+  </Button>
 
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() =>
-                              router.push(`/dashboard/edit/${p.id}`)
-                            }
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
+  {/* 👉 NUEVO: DASHBOARD PROPIEDAD */}
+  <Button
+    size="sm"
+    variant="ghost"
+    onClick={() => router.push(`/dashboard/inmueble/${p.id}`)}
+  >
+    📊
+  </Button>
 
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={async () => {
-                              if (!confirm("¿Eliminar propiedad?")) return
+  {/* EDIT */}
+  <Button
+    size="sm"
+    variant="ghost"
+    onClick={() => router.push(`/dashboard/edit/${p.id}`)}
+  >
+    <Edit className="w-4 h-4" />
+  </Button>
 
-                              const res = await fetch(
-                                `${API_URL}/property/${p.id}`,
-                                { method: "DELETE" }
-                              )
+  {/* DELETE */}
+  <Button
+    size="sm"
+    variant="ghost"
+    onClick={async () => {
+      if (!confirm("¿Eliminar propiedad?")) return
 
-                              if (!res.ok) {
-                                alert("Error al eliminar")
-                                return
-                              }
+      const res = await fetch(`${API_URL}/property/${p.id}`, {
+        method: "DELETE",
+      })
 
-                              setProperties((prev) =>
-                                prev.filter((x) => x.id !== p.id)
-                              )
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </Button>
-                        </div>
+      if (!res.ok) {
+        alert("Error al eliminar")
+        return
+      }
+
+      setProperties((prev) =>
+        prev.filter((x) => x.id !== p.id)
+      )
+    }}
+  >
+    <Trash2 className="w-4 h-4 text-red-500" />
+  </Button>
+</div>
                       </div>
                     ))}
                   </div>
