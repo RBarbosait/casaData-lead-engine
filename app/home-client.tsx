@@ -43,21 +43,37 @@ export default function HomePage() {
         <div className="space-y-4 animate-fade-up">
           <img src="/casadata-logo.png" alt="casaData" className="w-16 h-16 mx-auto animate-scale-in" />
 
-          <h1 className="text-3xl font-bold">
-            casaData
+          <h1 className="text-3xl font-bold leading-tight">
+            Entendé la demanda real de tu propiedad
           </h1>
 
-          <p className="text-gray-400 text-balance">
-            Explora casas, apartamentos, cocheras, negocios y espacios de almacenamiento.
+          <p className="text-gray-400">
+            No solo visitas. casaData detecta intención, interés y probabilidad de contacto en tiempo real.
           </p>
 
           <p className="text-sm text-gray-500">
-            Además, detecta quién está realmente interesado en cada propiedad.
+            Dejá de adivinar. Tomá decisiones con datos reales.
           </p>
         </div>
 
+        {/* 🔥 MÉTRICAS VISUALES */}
+        <div className="grid grid-cols-3 gap-3 animate-fade-up delay-100">
+          <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+            <p className="text-lg font-bold">+120%</p>
+            <p className="text-xs text-gray-500">más leads</p>
+          </div>
+          <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+            <p className="text-lg font-bold">x2</p>
+            <p className="text-xs text-gray-500">revisitas</p>
+          </div>
+          <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+            <p className="text-lg font-bold">+35%</p>
+            <p className="text-xs text-gray-500">tiempo en ficha</p>
+          </div>
+        </div>
+
         {/* IMAGE */}
-        <div className="rounded-xl overflow-hidden border border-white/10 animate-fade-up delay-100">
+        <div className="rounded-xl overflow-hidden border border-white/10 animate-fade-up delay-200">
           <img
             src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=1200&auto=format&fit=crop"
             alt="real estate"
@@ -66,46 +82,46 @@ export default function HomePage() {
         </div>
 
         {/* CTA */}
-        <div className="space-y-4 animate-fade-up delay-200">
+        <div className="space-y-4 animate-fade-up delay-300">
           <Link href="/inmuebles">
             <Button className="w-full h-14 text-lg">
               <List className="w-5 h-5 mr-2" />
-              Ver todos los inmuebles
+              Ver propiedades
             </Button>
           </Link>
 
           <Link href="/auth/register">
-            <Button variant="outline" className="w-full h-14 text-lg bg-transparent">
-              📝 Publicar mi propiedad
+            <Button className="w-full h-14 text-lg">
+              🚀 Empezar a medir mi propiedad
             </Button>
           </Link>
         </div>
 
         {/* VALUE */}
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 animate-fade-up delay-300">
+        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 animate-fade-up delay-400">
           <p className="text-sm text-emerald-400 font-medium">
             🎉 Primera publicación GRATIS para nuevos usuarios
           </p>
         </div>
 
         {/* HOW IT WORKS */}
-        <div className="pt-6 space-y-4 text-left animate-fade-up delay-400">
+        <div className="pt-6 space-y-4 text-left animate-fade-up delay-500">
           <h2 className="text-center font-semibold text-lg">
             Cómo funciona
           </h2>
 
           <div className="space-y-3 text-sm text-gray-400">
 
-            <div className="p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition">
-              1. Publicás tu propiedad
+            <div className="p-3 rounded-lg border border-white/10 bg-white/5">
+              1. Publicás tu propiedad en casaData
             </div>
 
-            <div className="p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition">
-              2. Compartís el QR en carteles o redes
+            <div className="p-3 rounded-lg border border-white/10 bg-white/5">
+              2. Detectamos comportamiento real (tiempo, scroll, revisitas)
             </div>
 
-            <div className="p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition">
-              3. Medís visitas, interés y contactos reales
+            <div className="p-3 rounded-lg border border-white/10 bg-white/5">
+              3. Identificamos usuarios con alta intención de compra
             </div>
 
           </div>
@@ -123,7 +139,7 @@ export default function HomePage() {
         </p>
       </div>
 
-      {/* 🔥 ANIMATIONS (Tailwind custom) */}
+      {/* 🔥 ANIMATIONS */}
       <style jsx global>{`
         @keyframes fadeUp {
           from {
