@@ -18,9 +18,9 @@ import LeadCard from "@/components/dashboard/lead-card"
 import { getInsights } from "@/lib/analytics"
 import QRCard from "@/components/dashboard/qr-card"
 
-import dynamic from "next/dynamic"
 
-const ChartClient = dynamic(
+import dynamicImport from "next/dynamic"
+const ChartClient = dynamicImport(
   () => import("@/components/dashboard/chart-client"),
   { ssr: false }
 )
