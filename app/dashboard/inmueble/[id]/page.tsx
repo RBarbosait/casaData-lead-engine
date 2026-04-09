@@ -464,6 +464,77 @@ if (leads.length === 0 && totalVisitsReal > 30) {
 />
 
 </div>
+      {/* 🔥 TIMELINE DE MEJORA */}
+<div className="p-6 border bg-white rounded-xl space-y-6">
+  <h3 className="font-semibold">
+    Evolución de la ficha
+  </h3>
+
+  <p className="text-sm text-gray-500">
+    Cómo impactan las mejoras en el comportamiento de los usuarios
+  </p>
+
+  <div className="space-y-6">
+
+    {/* STEP 1 */}
+    <div className="flex gap-4">
+      <div className="w-3 h-3 mt-2 rounded-full bg-gray-400" />
+      <div>
+        <p className="text-sm font-medium">
+          Publicación inicial
+        </p>
+        <p className="text-xs text-gray-500">
+          Bajo tiempo en ficha · pocos contactos
+        </p>
+      </div>
+    </div>
+
+    {/* STEP 2 */}
+    <div className="flex gap-4">
+      <div className="w-3 h-3 mt-2 rounded-full bg-yellow-500" />
+      <div>
+        <p className="text-sm font-medium">
+          Mejora de fotos y título
+        </p>
+        <p className="text-xs text-gray-500">
+          ↑ +35% tiempo promedio · más usuarios llegan a detalles
+        </p>
+      </div>
+    </div>
+
+    {/* STEP 3 */}
+    <div className="flex gap-4">
+      <div className="w-3 h-3 mt-2 rounded-full bg-yellow-600" />
+      <div>
+        <p className="text-sm font-medium">
+          Ajuste de precio
+        </p>
+        <p className="text-xs text-gray-500">
+          ↑ +20% revisitas · mayor interés real
+        </p>
+      </div>
+    </div>
+
+    {/* STEP 4 */}
+    <div className="flex gap-4">
+      <div className="w-3 h-3 mt-2 rounded-full bg-green-600" />
+      <div>
+        <p className="text-sm font-medium">
+          Optimización de contacto
+        </p>
+        <p className="text-xs text-gray-500">
+          ↑ +50% tasa de contacto · más leads convertidos
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  {/* 🔥 CTA ACCIÓN */}
+  <div className="p-4 rounded-lg bg-gray-50 border text-sm text-gray-700">
+    💡 Recomendación: aplicá mejoras en contenido y precio para aumentar la intención y conversión.
+  </div>
+</div>
       {/* BEHAVIOR */}
      
 <div className="grid md:grid-cols-4 gap-4">
