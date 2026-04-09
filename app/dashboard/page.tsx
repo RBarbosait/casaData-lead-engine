@@ -50,14 +50,14 @@ export default function DashboardPage() {
     const parsedUser = JSON.parse(userData)
     setUser(parsedUser)
 
-    // 🔥 PROPERTIES
+    // 🔥 PROPERTIES (incluye visits + leads desde backend)
     fetch(`${API_URL}/property`)
       .then((r) => r.json())
       .then((data) => {
         setProperties(data)
       })
 
-    // 🔥 INSIGHTS (si ya existe endpoint)
+    // 🔥 INSIGHTS (opcional, lo dejamos para KPIs globales)
     fetch(`${API_URL}/insights`)
       .then((r) => r.json())
       .then((data) => {
@@ -232,52 +232,68 @@ export default function DashboardPage() {
                 ) : (
                   <div className="space-y-4">
 
-                    {properties.map((p) => {
-                      const propertyInsights = insights[p.id] || {}
+                    {properties.map((p) => (
+                      <div
+                        key={p.id}
+                        className="border p-4 rounded-lg flex justify-between items-center"
+                      >
+                        <div>
+                          <h4 className="font-medium">{p.title}</h4>
+                          <p className="text-sm text-gray-500">
+                            {p.location}
+                          </p>
 
-                      return (
-                        <div
-                          key={p.id}
-                          className="border p-4 rounded-lg flex justify-between items-center"
-                        >
-                          <div>
-                            <h4 className="font-medium">{p.title}</h4>
-                            <p className="text-sm text-gray-500">
-                              {p.address}
-                            </p>
-
-                            <div className="text-xs text-gray-500 mt-1">
-                              👀 {propertyInsights.visits || 0} visitas · 💬{" "}
-                              {propertyInsights.leads || 0} interesados
-                            </div>
-
-                            <Badge className={getStatusColor(p.status)}>
-                              {p.status}
-                            </Badge>
+                          <div className="text-xs text-gray-500 mt-1">
+                            👀 {p.visits?.length || 0} visitas · 💬{" "}
+                            {p.leads?.length || 0} interesados
                           </div>
 
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() =>
-                                router.push(`/inmueble/${p.id}`)
-                              }
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-
-                            <Button size="sm" variant="ghost">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-
-                            <Button size="sm" variant="ghost">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                          <Badge className={getStatusColor(p.status)}>
+                            {p.status}
+                          </Badge>
                         </div>
-                      )
-                    })}
+
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() =>
+                              router.push(`/inmueble/${p.id}`)
+                            }
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() =>
+                              router.push(`/dashboard/edit/${p.id}`)
+                            }
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={async () => {
+                              if (!confirm("¿Eliminar propiedad?")) return
+
+                              await fetch(`${API_URL}/property/${p.id}`, {
+                                method: "DELETE",
+                              })
+
+                              setProperties((prev) =>
+                                prev.filter((x) => x.id !== p.id)
+                              )
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
 
                   </div>
                 )}
