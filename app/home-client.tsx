@@ -176,7 +176,7 @@ const API_URL = "https://casadata-api-production.up.railway.app"
   const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value
 
   try {
-    await fetch(`${API_URL}/api/contact`, {
+    await fetch(`${API_URL}/contact`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
