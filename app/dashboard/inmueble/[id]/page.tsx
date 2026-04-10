@@ -205,22 +205,26 @@ const contactIntentSessions = new Set(
         )
 
       const lastVisit = sessionVisits[sessionVisits.length - 1]
-
-      const relatedLead = leads
+const sessionLeads = leads
   .filter((l: any) => l.sessionId === sessionId)
   .sort(
     (a: any, b: any) =>
       new Date(b.createdAt).getTime() -
       new Date(a.createdAt).getTime()
-  )[0] || null
+  )
+
+const lastLead = sessionLeads[0] || null
+
+const lastLeadWithContact =
+  sessionLeads.find((l: any) => l.contact) || null
 
 return {
   sessionId,
   count,
   lastVisitAt: lastVisit?.createdAt || null,
-  lastContactAt: relatedLead?.createdAt || null,
-  contact: relatedLead?.contact || null,
-  leadType: relatedLead?.type || null,
+  lastContactAt: lastLeadWithContact?.createdAt || null,
+  contact: lastLeadWithContact?.contact || null,
+  leadType: lastLead?.type || null,
   hasIntent: contactIntentSessions.has(sessionId),
   source: sessionVisits[0]?.source || "web",
 }
