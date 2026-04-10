@@ -442,26 +442,38 @@ export default function PropertyPage() {
   }
 
   const handleWhatsApp = async () => {
-    if (!agent.phone) return
+  if (!agent.phone) return
 
-    const phone = normalizePhone(agent.phone)
-    const url = `https://wa.me/${phone}`
+  const phone = normalizePhone(agent.phone)
 
-    trackContact()
+  // 🔥 URL ACTUAL DEL INMUEBLE
+  const propertyUrl =
+    typeof window !== "undefined" ? window.location.href : ""
 
-    fetch(`${API_URL}/lead`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        propertyId,
-        type: "whatsapp",
-        sessionId: getSessionId(),
-        visitorId: getVisitorId(),
-      }),
-    }).catch(() => {})
+  // 🔥 MENSAJE
+  const message = `Hola, estoy viendo este inmueble en casaData: ${propertyUrl} y me gustaría recibir más información.`
 
-    window.open(url, "_blank", "noopener,noreferrer")
-  }
+  // 🔥 ENCODE
+  const encodedMessage = encodeURIComponent(message)
+
+  const url = `https://wa.me/${phone}?text=${encodedMessage}`
+
+  trackContact()
+
+  fetch(`${API_URL}/lead`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      propertyId,
+      type: "whatsapp",
+      sessionId: getSessionId(),
+      visitorId: getVisitorId(),
+    }),
+  }).catch(() => {})
+
+  // 🔥 IMPORTANTE → esto evita bloqueos en mobile
+  window.location.href = url
+}
 
   const handleEmail = async () => {
     if (!agent.email) return
