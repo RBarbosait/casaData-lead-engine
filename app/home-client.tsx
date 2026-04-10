@@ -176,7 +176,7 @@ export default function HomePage() {
   const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value
 
   try {
-    await fetch("/api/contact", {
+    await fetch("https://casadata-api-production.up.railway.app/api/contact", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
