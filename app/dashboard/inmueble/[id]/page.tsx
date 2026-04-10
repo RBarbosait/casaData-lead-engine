@@ -214,14 +214,14 @@ const contactIntentSessions = new Set(
       new Date(a.createdAt).getTime()
   )[0] || null
 
-      return {
+return {
   sessionId,
   count,
   lastVisitAt: lastVisit?.createdAt || null,
   lastContactAt: relatedLead?.createdAt || null,
   contact: relatedLead?.contact || null,
   leadType: relatedLead?.type || null,
-  hasIntent: contactIntentSessions.has(sessionId), // 🔥 NUEVO
+  hasIntent: contactIntentSessions.has(sessionId),
   source: sessionVisits[0]?.source || "web",
 }
     })
