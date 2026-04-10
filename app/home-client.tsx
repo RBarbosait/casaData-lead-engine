@@ -8,7 +8,7 @@ import { List } from "lucide-react"
 
 export default function HomePage() {
   const searchParams = useSearchParams()
-
+const API_URL = "https://casadata-api-production.up.railway.app"
   useEffect(() => {
     const propertyId = searchParams.get("id")
     if (propertyId) {
@@ -176,7 +176,7 @@ export default function HomePage() {
   const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value
 
   try {
-    await fetch("https://casadata-api-production.up.railway.app/api/contact", {
+    await fetch(`${API_URL}/api/contact`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
