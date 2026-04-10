@@ -145,7 +145,71 @@ export default function HomePage() {
             </Button>
           </Link>
         </div>
+        {/* 🇺🇾 URUGUAY */}
+<div className="bg-blue-50 border border-blue-200 rounded-lg p-4 animate-fade-up delay-400 text-center">
+  <p className="text-sm text-blue-800 font-medium">
+    🇺🇾 casaData es un emprendimiento orgullosamente uruguayo
+  </p>
 
+  <p className="text-xs text-blue-600 mt-1">
+    Creado para transformar cómo se entiende la demanda inmobiliaria en la región
+  </p>
+</div>
+{/* CONTACT */}
+<div className="pt-6 space-y-4 animate-fade-up delay-500">
+  <h2 className="text-center font-semibold text-lg">
+    ¿Querés conocernos o tenés dudas?
+  </h2>
+
+  <p className="text-sm text-muted-foreground text-center">
+    Escribinos y te respondemos lo antes posible. También podés contarnos qué necesitás medir.
+  </p>
+
+  <form
+    className="space-y-3"
+    onSubmit={(e) => {
+      e.preventDefault()
+
+      const form = e.currentTarget
+      const name = (form.elements.namedItem("name") as HTMLInputElement).value
+      const contact = (form.elements.namedItem("contact") as HTMLInputElement).value
+      const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value
+
+      const subject = encodeURIComponent("Contacto casaData")
+      const body = encodeURIComponent(
+        `Nombre: ${name}\nContacto: ${contact}\n\nMensaje:\n${message}`
+      )
+
+      window.location.href = `mailto:rbarbosait@gmail.com?subject=${subject}&body=${body}`
+    }}
+  >
+    <input
+      name="name"
+      required
+      placeholder="Nombre *"
+      className="w-full p-3 rounded-lg border bg-white"
+    />
+
+    <input
+      name="contact"
+      required
+      placeholder="Email o Teléfono *"
+      className="w-full p-3 rounded-lg border bg-white"
+    />
+
+    <textarea
+      name="message"
+      required
+      placeholder="Mensaje *"
+      rows={4}
+      className="w-full p-3 rounded-lg border bg-white"
+    />
+
+    <Button type="submit" className="w-full h-12">
+      Enviar mensaje
+    </Button>
+  </form>
+</div>
         {/* FOOT */}
         <p className="text-sm text-muted-foreground animate-fade-in delay-500">
           Escaneaste un código QR desde un cartel inmobiliario
