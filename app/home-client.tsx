@@ -167,7 +167,7 @@ const API_URL = "https://casadata-api-production.up.railway.app"
 
   <form
     className="space-y-3"
-    onSubmit={async (e) => {
+onSubmit={async (e) => {
   e.preventDefault()
 
   const form = e.currentTarget
@@ -176,24 +176,26 @@ const API_URL = "https://casadata-api-production.up.railway.app"
   const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value
 
   try {
-    await fetch(`${API_URL}/contact`, {
+    const res = await fetch(`${API_URL}/contact`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        name,
-        contact,
-        message,
-      }),
+      body: JSON.stringify({ name, contact, message }),
     })
 
-    // 🔥 feedback UX
+    if (!res.ok) {
+      const errText = await res.text()
+      console.error("API ERROR:", errText)
+      alert("Error real del servidor ❌")
+      return
+    }
+
     form.reset()
     alert("Mensaje enviado correctamente ✅")
   } catch (err) {
-    console.error(err)
-    alert("Error al enviar mensaje")
+    console.error("FETCH ERROR:", err)
+    alert("No se pudo conectar con el servidor ❌")
   }
 }}
   >
