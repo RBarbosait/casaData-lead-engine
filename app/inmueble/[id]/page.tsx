@@ -81,7 +81,19 @@ function toStringArray(value: any) {
 }
 
 function normalizePhone(value: any) {
-  return String(value || "").replace(/\D/g, "")
+  let phone = String(value || "").replace(/\D/g, "")
+
+  // 🔥 quitar 0 inicial (ej: 095...)
+  if (phone.startsWith("0")) {
+    phone = phone.substring(1)
+  }
+
+  // 🔥 asegurar prefijo Uruguay
+  if (!phone.startsWith("598")) {
+    phone = "598" + phone
+  }
+
+  return phone
 }
 
 export default function PropertyPage() {
