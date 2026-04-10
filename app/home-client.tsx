@@ -254,7 +254,7 @@ onSubmit={async (e) => {
   </p>
 
 </div>
-
+</div>
       {/* ANIMATIONS */}
       <style jsx global>{`
         @keyframes fadeUp {
