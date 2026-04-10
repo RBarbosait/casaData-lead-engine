@@ -69,10 +69,10 @@ const API_URL = "https://casadata-api-production.up.railway.app"
           </p>
         </div>
         {/* CTA */}
-        <div className="space-y-3 animate-fade-up">
+     <div className="space-y-3 animate-fade-up">
 
   <Link href="/inmuebles">
-    <Button className="w-full h-14 text-lg rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 shadow-md hover:shadow-lg transition-all">
+    <Button className="w-full h-14 text-lg rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white shadow-md hover:shadow-lg transition-all">
       <List className="w-5 h-5 mr-2" />
       Ver propiedades
     </Button>
@@ -81,14 +81,13 @@ const API_URL = "https://casadata-api-production.up.railway.app"
   <Link href="/auth/register">
     <Button
       variant="outline"
-      className="w-full h-14 text-lg rounded-xl border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 shadow-sm hover:shadow-md transition-all"
+      className="w-full h-14 text-lg rounded-xl border border-zinc-300 text-zinc-700 hover:bg-zinc-100 shadow-sm hover:shadow-md transition-all"
     >
       🚀 Publicar mi propiedad
     </Button>
   </Link>
 
 </div>
-
         {/* MÉTRICAS */}
         <div className="grid grid-cols-3 gap-3 animate-fade-up delay-100">
           <div className="p-3 rounded-lg border bg-white">
@@ -231,11 +230,30 @@ onSubmit={async (e) => {
     </Button>
   </form>
 </div>
-        {/* FOOT */}
-        <p className="text-sm text-muted-foreground animate-fade-in delay-500">
-          Escaneaste un código QR desde un cartel inmobiliario
-        </p>
-      </div>
+        {/* FOOTER */}
+<div className="pt-10 pb-6 text-center space-y-4 border-t mt-10">
+
+  <p className="text-sm text-muted-foreground">
+    casaData © {new Date().getFullYear()}
+  </p>
+
+  <div className="flex justify-center gap-4 text-sm text-muted-foreground">
+    <Link href="/about" className="hover:text-foreground transition-colors">
+      About
+    </Link>
+    <Link href="/how-it-works" className="hover:text-foreground transition-colors">
+      Cómo funciona
+    </Link>
+    <Link href="/auth/register" className="hover:text-foreground transition-colors">
+      Empezar
+    </Link>
+  </div>
+
+  <p className="text-xs text-muted-foreground">
+    Hecho en Uruguay 🇺🇾
+  </p>
+
+</div>
 
       {/* ANIMATIONS */}
       <style jsx global>{`
