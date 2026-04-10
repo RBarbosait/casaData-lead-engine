@@ -68,6 +68,26 @@ const API_URL = "https://casadata-api-production.up.railway.app"
             Dejá de adivinar. Tomá decisiones con datos reales.
           </p>
         </div>
+        {/* CTA */}
+        <div className="space-y-3 animate-fade-up">
+
+  <Link href="/inmuebles">
+    <Button className="w-full h-14 text-lg rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 shadow-md hover:shadow-lg transition-all">
+      <List className="w-5 h-5 mr-2" />
+      Ver propiedades
+    </Button>
+  </Link>
+
+  <Link href="/auth/register">
+    <Button
+      variant="outline"
+      className="w-full h-14 text-lg rounded-xl border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 shadow-sm hover:shadow-md transition-all"
+    >
+      🚀 Publicar mi propiedad
+    </Button>
+  </Link>
+
+</div>
 
         {/* MÉTRICAS */}
         <div className="grid grid-cols-3 gap-3 animate-fade-up delay-100">
@@ -94,21 +114,6 @@ const API_URL = "https://casadata-api-production.up.railway.app"
           />
         </div>
 
-        {/* CTA */}
-        <div className="space-y-4 animate-fade-up delay-300">
-          <Link href="/inmuebles">
-            <Button className="w-full h-14 text-lg">
-              <List className="w-5 h-5 mr-2" />
-              Ver propiedades
-            </Button>
-          </Link>
-
-          <Link href="/auth/register">
-            <Button variant="outline" className="w-full h-14 text-lg">
-              🚀 Empezar a medir mi propiedad
-            </Button>
-          </Link>
-        </div>
 
         {/* VALUE */}
         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 animate-fade-up delay-400">
