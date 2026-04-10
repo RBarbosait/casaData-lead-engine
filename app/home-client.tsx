@@ -167,21 +167,35 @@ export default function HomePage() {
 
   <form
     className="space-y-3"
-    onSubmit={(e) => {
-      e.preventDefault()
+    onSubmit={async (e) => {
+  e.preventDefault()
 
-      const form = e.currentTarget
-      const name = (form.elements.namedItem("name") as HTMLInputElement).value
-      const contact = (form.elements.namedItem("contact") as HTMLInputElement).value
-      const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value
+  const form = e.currentTarget
+  const name = (form.elements.namedItem("name") as HTMLInputElement).value
+  const contact = (form.elements.namedItem("contact") as HTMLInputElement).value
+  const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value
 
-      const subject = encodeURIComponent("Contacto casaData")
-      const body = encodeURIComponent(
-        `Nombre: ${name}\nContacto: ${contact}\n\nMensaje:\n${message}`
-      )
+  try {
+    await fetch("/api/contact", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        contact,
+        message,
+      }),
+    })
 
-      window.location.href = `mailto:rbarbosait@gmail.com?subject=${subject}&body=${body}`
-    }}
+    // 🔥 feedback UX
+    form.reset()
+    alert("Mensaje enviado correctamente ✅")
+  } catch (err) {
+    console.error(err)
+    alert("Error al enviar mensaje")
+  }
+}}
   >
     <input
       name="name"
