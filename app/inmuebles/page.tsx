@@ -132,11 +132,14 @@ export default function InmueblesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [nearbyMode, setNearbyMode] = useState(false)
   const [properties, setProperties] = useState<Property[]>([])
-  const searchParams = useSearchParams()
+  const [loading, setLoading] = useState(true)
 
+  const searchParams = useSearchParams()
   useEffect(() => {
-  getAllProperties().then(setProperties)
-        .finally(() => setLoading(false))
+  setLoading(true)
+  getAllProperties()
+    .then(setProperties)
+    .finally(() => setLoading(false))
 }, [])
 
   useEffect(() => {
