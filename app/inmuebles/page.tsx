@@ -136,6 +136,7 @@ export default function InmueblesPage() {
 
   useEffect(() => {
   getAllProperties().then(setProperties)
+        .finally(() => setLoading(false))
 }, [])
 
   useEffect(() => {
@@ -151,7 +152,25 @@ export default function InmueblesPage() {
       }, 100)
     }
   }, [searchParams])
+function PropertySkeleton() {
+  return (
+    <Card className="overflow-hidden animate-pulse">
+      <div className="w-full h-48 bg-muted" />
 
+      <CardHeader className="pb-2">
+        <div className="h-4 bg-muted rounded w-2/3 mb-2" />
+        <div className="h-3 bg-muted rounded w-1/2" />
+      </CardHeader>
+
+      <CardContent>
+        <div className="flex gap-2">
+          <div className="h-8 bg-muted rounded flex-1" />
+          <div className="h-8 bg-muted rounded w-10" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
   const filteredProperties = properties.filter(
     (property) =>
       property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -239,7 +258,13 @@ export default function InmueblesPage() {
             </div>
           )}
 
-          {filteredProperties.length === 0 ? (
+          {loading ? (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {Array.from({ length: 8 }).map((_, i) => (
+      <PropertySkeleton key={i} />
+    ))}
+  </div>
+) : filteredProperties.length === 0 ? (
             <div className="text-center py-12">
               <Home className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-foreground mb-2">
