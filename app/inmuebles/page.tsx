@@ -279,14 +279,13 @@ function PropertySkeleton() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProperties.map((property, index) => (
-                <div key={property.id} data-property-id={property.id}>
-                  <PropertyCard
-                    property={property}
-                    href={index === 0 ? FEATURED_PROPERTY_URL : undefined}
-                  />
-                </div>
-              ))}
+           {filteredProperties.map((property) => (
+  <div key={property.id} data-property-id={property.id}>
+    <PropertyCard
+      property={property}
+    />
+  </div>
+))}
             </div>
           )}
         </div>
